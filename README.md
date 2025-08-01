@@ -1,43 +1,115 @@
-# Astro Starter Kit: Minimal
+Pokédex SSR con Astro 🪐, Astro DB (beta) y Turso
 
-```sh
-bun create astro@latest -- --template minimal
-```
+---
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+Demo en producción → https://TU-SITE-NETLIFY.netlify.app
 
-## 🚀 Project Structure
+⸻
 
-Inside of your Astro project, you'll see the following folders and files:
+📖 Descripción
 
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
-```
+Ejemplo full-stack construido con Astro 4, la beta de Astro DB (SQL as-a-Service), Drizzle ORM y Turso como base de datos remota.
+	•	Lista los primeros 151 Pokémon usando la PokéAPI y los guarda en Astro DB.
+	•	Renderiza cada página mediante SSR ( output:"server" ) y aplica caché TTL de 24 h: solo actualiza un Pokémon cuando su updatedAt ha caducado.
+	•	Permite marcar favoritos (inserta en la tabla Favorite) y verlos en /favorites.
+	•	Desplegado gratis en Netlify Functions.
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+⸻
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+✨ Características
 
-Any static assets, like images, can be placed in the `public/` directory.
+Funcionalidad	Detalle
+Astro + SSR	@astrojs/netlify + output:"server"
+Astro DB (beta)	Schema con defineTable, tipado Drizzle ORM
+Turso (libSQL)	SQL global, token JWT, plan gratuito
+Caché TTL	24 h: evita fetch innecesario a PokéAPI
+CRUD Favoritos	Endpoint /api/fav con insert idempotente
+Filtrado UI	Input client-side, sin frameworks extra
 
-## 🧞 Commands
 
-All commands are run from the root of the project, from a terminal:
+⸻
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `bun install`             | Installs dependencies                            |
-| `bun dev`             | Starts local dev server at `localhost:4321`      |
-| `bun build`           | Build your production site to `./dist/`          |
-| `bun preview`         | Preview your build locally, before deploying     |
-| `bun astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `bun astro -- --help` | Get help using the Astro CLI                     |
+🔧 Requisitos Previos
+	•	Node 20+
+	•	Turso CLI ≥ 0.54
+curl -sSfL https://get.tur.so/install.sh | sh
+	•	Git y cuenta GitHub
+	•	Cuenta Netlify (plan Free)
 
-## 👀 Want to learn more?
+⸻
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+🚀 Instalación Local
+
+# 1 Clona el repo
+ git clone https://github.com/TU-USUARIO/pokedex-astro.git
+ cd pokedex-astro
+
+# 2 Instala deps
+ npm install
+
+# 3 Crea la BD remota
+ turso auth login
+ turso db create pokedex-db
+ turso db tokens create pokedex-db --read-write
+
+# 4 Configura variables
+ cp .env.example .env         # edita DATABASE_URL y TURSO_AUTH_TOKEN
+
+# 5 Migra y siembra datos
+ npx astro db push --remote   # crea tablas en Turso
+ npx astro db seed --remote   # inserta 151 Pokémon
+
+# 6 Inicia en desarrollo
+ npm run dev                  # http://localhost:4321
+
+
+⸻
+
+☁️ Despliegue en Netlify
+	1.	Push a GitHub.
+	2.	En Netlify → Add new site → Import from GitHub.
+	3.	Ajusta Build Command: npm run build y Publish Dir: netlify.
+	4.	Añade las variables DATABASE_URL y TURSO_AUTH_TOKEN en Site → Environment.
+	5.	Click Deploy Site. Netlify creará automáticamente las Functions serverless.
+
+⸻
+
+📂 Estructura de Carpetas
+
+src/
+ ├─ db/
+ │   ├─ config.ts      # tablas Drizzle
+ │   └─ seed.ts        # poblar la BD
+ ├─ pages/
+ │   ├─ index.astro    # lista + filtro + add Fav
+ │   ├─ favorites.astro# vista favoritos
+ │   └─ api/
+ │       └─ fav.ts     # endpoint POST
+ └─ components/        # UI reutilizable
+
+
+⸻
+
+📜 Scripts npm útiles
+
+Script	Acción
+dev	Ejecuta Astro + SSR en local
+build	Compila para Netlify (netlify/)
+preview	Previsualiza el build localmente
+astro db push	Aplica migraciones locales
+astro db seed	Inserta datos de ejemplo
+
+
+⸻
+
+🔍 Referencias
+	•	Astro DB (beta) Docs
+	•	Turso CLI Docs
+	•	Drizzle ORM
+	•	PokéAPI
+
+⸻
+
+🪪 Licencia
+
+Este proyecto se distribuye bajo licencia MIT. ¡Forks, PRs y feedback son bienvenidos!
