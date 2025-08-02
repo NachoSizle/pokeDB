@@ -23,7 +23,7 @@
   directory = "dist/functions"
   node_bundler = "esbuild"
 
-# 🔀 Redirects para SPA routing
+# 🔀 Redirects para SSR completo
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/entry"
@@ -36,6 +36,12 @@
 
 [[redirects]]
   from = "/favorites"
+  to = "/.netlify/functions/entry"
+  status = 200
+
+# 🎯 Catch-all para SSR (debe ir al final)
+[[redirects]]
+  from = "/*"
   to = "/.netlify/functions/entry"
   status = 200
 
