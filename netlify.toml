@@ -1,54 +1,33 @@
 # 🚀 Configuración de Netlify para PokeDB
-# Optimizado para Astro SSR con Functions
+# Configuración mínima y funcional
 
 [build]
-  # 📦 Comando de build con DB remota
   command = "npm run build"
-  
-  # 📁 Directorio de salida
   publish = "dist"
-  
-  # 🔄 Auto-deploy en push a main
-  base = "."
 
 [build.environment]
-  # 📋 Versión de Node.js
   NODE_VERSION = "18"
-  
-  # 🚀 Configuración de build
-  NPM_FLAGS = "--production=false"
 
-# 🌐 Configuración de Functions (Astro SSR)
-[functions]
-  directory = "dist/functions"
-  node_bundler = "esbuild"
-  included_files = ["dist/**/*"]
-
-# 🔀 Redirects para SSR completo
+# � Redirects básicos para SSR (SIN force flags)
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/entry"
   status = 200
-  force = true
 
 [[redirects]]
   from = "/pokemon/*"
   to = "/.netlify/functions/entry"
   status = 200
-  force = true
 
 [[redirects]]
   from = "/favorites"
   to = "/.netlify/functions/entry"
   status = 200
-  force = true
 
-# 🎯 Catch-all para SSR (debe ir al final)
 [[redirects]]
   from = "/*"
   to = "/.netlify/functions/entry"
   status = 200
-  force = false
 
 # 🎯 Headers para optimización
 [[headers]]
