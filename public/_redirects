@@ -1,0 +1,5 @@
+# Redirects para Astro SSR en Netlify
+/api/*  /.netlify/functions/entry  200
+/pokemon/*  /.netlify/functions/entry  200
+/favorites  /.netlify/functions/entry  200
+/*  /.netlify/functions/entry  200
