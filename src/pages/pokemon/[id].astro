@@ -1,0 +1,217 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import { getPokemonDetails, getPokemons, getTypeColor, capitalize } from '../../services/pokemon';
+
+// Función requerida para rutas dinámicas en Astro
+export async function getStaticPaths() {
+  // Obtenemos los primeros 151 Pokémon (primera generación) para pre-generar las páginas
+  const pokemonListResponse = await getPokemons(151, 0);
+  
+  return pokemonListResponse.results.map((pokemon) => ({
+    params: { id: pokemon.id.toString() },
+  }));
+}
+
+// Obtenemos el ID del Pokémon desde los parámetros de la URL
+const { id } = Astro.params;
+
+if (!id) {
+  return Astro.redirect('/');
+}
+
+// Obtenemos los detalles del Pokémon
+let pokemon;
+try {
+  pokemon = await getPokemonDetails(id);
+} catch (error) {
+  console.error('Error loading Pokémon:', error);
+  return Astro.redirect('/');
+}
+
+// Preparamos datos para la UI
+const imageUrl = pokemon.sprites.other['official-artwork']?.front_default || pokemon.sprites.front_default;
+const primaryType = pokemon.types[0]?.type.name || 'normal';
+const typeColorGradient = getTypeColor(primaryType);
+
+// Estadísticas organizadas para mostrar
+const statNames: Record<string, string> = {
+  'hp': 'HP',
+  'attack': 'Ataque',
+  'defense': 'Defensa',
+  'special-attack': 'At. Especial',
+  'special-defense': 'Def. Especial',
+  'speed': 'Velocidad'
+};
+---
+
+<MainLayout 
+  title={`${capitalize(pokemon.name)} - PokéDB`}
+  description={`Conoce todos los detalles de ${capitalize(pokemon.name)}: tipos, estadísticas, altura, peso y más información.`}
+>
+  <div class="max-w-4xl mx-auto">
+    <!-- Botón de regreso -->
+    <div class="mb-8">
+      <a 
+        href="/" 
+        class="inline-flex items-center gap-2 text-purple-400 hover:text-purple-300 transition-colors"
+      >
+        ← Volver a la Pokédex
+      </a>
+    </div>
+
+    <!-- Contenido principal -->
+    <div class="grid lg:grid-cols-2 gap-8 mb-12">
+      <!-- Sección izquierda: Imagen y datos básicos -->
+      <div class="flex flex-col space-y-6">
+        <!-- Imagen principal -->
+        <div class="relative">
+          <div class={`absolute inset-0 bg-gradient-to-br ${typeColorGradient} opacity-30 rounded-3xl blur-2xl`}></div>
+          <div class={`relative bg-slate-800/50 rounded-3xl p-8 backdrop-blur-sm border border-slate-700/50 type-${primaryType}`}>
+            <div class="text-center">
+              <div class="text-sm font-mono text-slate-400 mb-2">
+                #{pokemon.id.toString().padStart(3, '0')}
+              </div>
+              <img 
+                src={imageUrl}
+                alt={`${capitalize(pokemon.name)} - Pokémon`}
+                class="w-full max-w-xs mx-auto h-64 object-contain drop-shadow-2xl mb-6"
+                width="300"
+                height="300"
+              />
+              <h1 class="text-4xl font-bold text-white capitalize mb-4">
+                {pokemon.name}
+              </h1>
+              
+              <!-- Tipos -->
+              <div class="flex gap-3 justify-center flex-wrap">
+                {pokemon.types.map((typeInfo) => (
+                  <span 
+                    class={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium text-white bg-gradient-to-r ${getTypeColor(typeInfo.type.name)} shadow-lg`}
+                  >
+                    {capitalize(typeInfo.type.name)}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contenedor flex para altura/peso y experiencia base -->
+        <div class="flex flex-col space-y-6 flex-grow">
+          <!-- Características físicas -->
+          <div class="grid grid-cols-2 gap-4">
+            <div class="bg-slate-800/50 rounded-2xl p-6 border border-slate-700/50 backdrop-blur-sm">
+              <div class="text-center">
+                <div class="text-3xl mb-2">📏</div>
+                <div class="text-slate-400 text-sm mb-1">Altura</div>
+                <div class="text-2xl font-bold text-white">{pokemon.height / 10} m</div>
+              </div>
+            </div>
+            <div class="bg-slate-800/50 rounded-2xl p-6 border border-slate-700/50 backdrop-blur-sm">
+              <div class="text-center">
+                <div class="text-3xl mb-2">⚖️</div>
+                <div class="text-slate-400 text-sm mb-1">Peso</div>
+                <div class="text-2xl font-bold text-white">{pokemon.weight / 10} kg</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Experiencia base - Se alineará con Sprites -->
+          <div class="bg-slate-800/50 rounded-2xl p-4 border border-slate-700/50 backdrop-blur-sm mt-auto">
+            <div class="text-center">
+              <div class="text-4xl mb-3">⭐</div>
+              <div class="text-slate-400 text-sm mb-2">Experiencia Base</div>
+              <div class="text-3xl font-bold text-white mb-2">{pokemon.base_experience}</div>
+              <div class="text-slate-500 text-xs">puntos de experiencia</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección derecha: Estadísticas -->
+      <div class="space-y-6">
+        <div class="bg-slate-800/50 rounded-3xl p-8 border border-slate-700/50 backdrop-blur-sm">
+          <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+            📊 Estadísticas Base
+          </h2>
+          
+          <div class="space-y-4">
+            {pokemon.stats.map((statInfo) => {
+              const statName = statNames[statInfo.stat.name] || capitalize(statInfo.stat.name);
+              const percentage = Math.min((statInfo.base_stat / 255) * 100, 100);
+              
+              return (
+                <div class="space-y-2">
+                  <div class="flex justify-between items-center">
+                    <span class="text-slate-300 font-medium">{statName}</span>
+                    <span class="text-white font-bold">{statInfo.base_stat}</span>
+                  </div>
+                  <div class="w-full bg-slate-700 rounded-full h-3 overflow-hidden">
+                    <div 
+                      class={`h-full bg-gradient-to-r ${typeColorGradient} transition-all duration-1000 ease-out rounded-full`}
+                      style={`width: ${percentage}%`}
+                    ></div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <!-- Total de estadísticas -->
+          <div class="mt-6 pt-6 border-t border-slate-700">
+            <div class="flex justify-between items-center">
+              <span class="text-slate-300 font-medium">Total</span>
+              <span class="text-white font-bold text-lg">
+                {pokemon.stats.reduce((total, stat) => total + stat.base_stat, 0)}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sprites adicionales -->
+        <div class="bg-slate-800/50 rounded-3xl p-8 border border-slate-700/50 backdrop-blur-sm">
+          <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+            🎨 Sprites
+          </h2>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="text-center">
+              <div class="text-slate-400 text-sm mb-2">Normal</div>
+              <div class="bg-slate-700/30 rounded-xl p-4">
+                <img 
+                  src={pokemon.sprites.front_default}
+                  alt={`${capitalize(pokemon.name)} normal`}
+                  class="w-full h-24 object-contain"
+                  loading="lazy"
+                />
+              </div>
+            </div>
+            {pokemon.sprites.front_shiny && (
+              <div class="text-center">
+                <div class="text-slate-400 text-sm mb-2">Shiny ✨</div>
+                <div class="bg-slate-700/30 rounded-xl p-4">
+                  <img 
+                    src={pokemon.sprites.front_shiny}
+                    alt={`${capitalize(pokemon.name)} shiny`}
+                    class="w-full h-24 object-contain"
+                    loading="lazy"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</MainLayout>
+
+<style>
+  /* Animaciones para las barras de estadísticas */
+  @keyframes fillBar {
+    from { width: 0%; }
+  }
+  
+  .h-full {
+    animation: fillBar 1s ease-out;
+  }
+</style>

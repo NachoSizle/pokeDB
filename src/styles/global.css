@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+:root {
+  --accent: 136, 58, 234;
+  --accent-light: 224, 204, 250;
+  --accent-dark: 49, 10, 101;
+  --accent-gradient: linear-gradient(
+    45deg,
+    rgb(var(--accent)),
+    rgb(var(--accent-light)) 30%,
+    white 60%
+  );
+  
+  /* Colores temáticos de Pokémon */
+  --fire: 255, 123, 67;
+  --water: 67, 156, 255;
+  --grass: 67, 255, 156;
+  --electric: 255, 255, 67;
+  --psychic: 255, 67, 186;
+  --ice: 67, 255, 255;
+  --dragon: 186, 67, 255;
+  --dark: 67, 67, 67;
+  --fighting: 186, 123, 67;
+  --poison: 186, 67, 186;
+  --ground: 186, 156, 67;
+  --flying: 156, 186, 255;
+  --bug: 156, 255, 67;
+  --rock: 186, 186, 123;
+  --ghost: 123, 67, 186;
+  --steel: 156, 156, 186;
+  --fairy: 255, 186, 255;
+  --normal: 186, 186, 156;
+}
+
+* {
+  box-sizing: border-box;
+  text-decoration: none;
+}
+
+html {
+  font-family: system-ui, sans-serif;
+  scroll-behavior: smooth;
+}
+
+body {
+  background: linear-gradient(135deg, #0f0f23 0%, #2d1b69 35%, #0f0f23 100%);
+  min-height: 100vh;
+  color: #e2e8f0;
+}
+
+/* Estilos para tarjetas de Pokémon */
+.pokemon-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+}
+
+.pokemon-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* Efectos de brillo para tipos de Pokémon */
+.type-fire { background: linear-gradient(135deg, rgba(var(--fire), 0.2), rgba(var(--fire), 0.1)); }
+.type-water { background: linear-gradient(135deg, rgba(var(--water), 0.2), rgba(var(--water), 0.1)); }
+.type-grass { background: linear-gradient(135deg, rgba(var(--grass), 0.2), rgba(var(--grass), 0.1)); }
+.type-electric { background: linear-gradient(135deg, rgba(var(--electric), 0.2), rgba(var(--electric), 0.1)); }
+.type-psychic { background: linear-gradient(135deg, rgba(var(--psychic), 0.2), rgba(var(--psychic), 0.1)); }
+.type-ice { background: linear-gradient(135deg, rgba(var(--ice), 0.2), rgba(var(--ice), 0.1)); }
+.type-dragon { background: linear-gradient(135deg, rgba(var(--dragon), 0.2), rgba(var(--dragon), 0.1)); }
+.type-dark { background: linear-gradient(135deg, rgba(var(--dark), 0.2), rgba(var(--dark), 0.1)); }
+.type-fighting { background: linear-gradient(135deg, rgba(var(--fighting), 0.2), rgba(var(--fighting), 0.1)); }
+.type-poison { background: linear-gradient(135deg, rgba(var(--poison), 0.2), rgba(var(--poison), 0.1)); }
+.type-ground { background: linear-gradient(135deg, rgba(var(--ground), 0.2), rgba(var(--ground), 0.1)); }
+.type-flying { background: linear-gradient(135deg, rgba(var(--flying), 0.2), rgba(var(--flying), 0.1)); }
+.type-bug { background: linear-gradient(135deg, rgba(var(--bug), 0.2), rgba(var(--bug), 0.1)); }
+.type-rock { background: linear-gradient(135deg, rgba(var(--rock), 0.2), rgba(var(--rock), 0.1)); }
+.type-ghost { background: linear-gradient(135deg, rgba(var(--ghost), 0.2), rgba(var(--ghost), 0.1)); }
+.type-steel { background: linear-gradient(135deg, rgba(var(--steel), 0.2), rgba(var(--steel), 0.1)); }
+.type-fairy { background: linear-gradient(135deg, rgba(var(--fairy), 0.2), rgba(var(--fairy), 0.1)); }
+.type-normal { background: linear-gradient(135deg, rgba(var(--normal), 0.2), rgba(var(--normal), 0.1)); }
+
+code {
+  font-family:
+    Menlo,
+    Monaco,
+    Lucida Console,
+    Liberation Mono,
+    DejaVu Sans Mono,
+    Bitstream Vera Sans Mono,
+    Courier New,
+    monospace;
+}

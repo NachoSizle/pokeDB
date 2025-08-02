@@ -1,86 +1,139 @@
-# 🚀 Plan de Ataque: Proyecto pokeDB
+📑 Plan de Ataque – Proyecto PokeDB
 
-Este documento describe el plan de desarrollo para crear una Pokédex interactiva utilizando Astro. Nos basaremos en la estructura del "Astro Starter Kit: Minimal" y las convenciones definidas en `GEMINI.md`.
+Pokédex SSR con Astro 🪐, Astro DB (beta), Turso y Netlify Functions
 
-## ⭐ Pilar Fundamental: Rendimiento Excepcional
+⸻
 
-Antes de detallar las fases, es crucial establecer que **la velocidad de carga y el rendimiento son los pilares fundamentales de este proyecto**. Cada decisión técnica, desde la elección de componentes hasta la gestión de assets, se tomará con el objetivo de mantener un performance óptimo y una experiencia de usuario fluida, siguiendo la filosofía "content-first" de Astro.
+⭐ Pilar fundamental: Rendimiento y persistencia full-stack
+	•	Astro DB (beta) + Turso (libSQL) para SQL gestionada con Drizzle ORM.
+	•	SSR (output:"server") en Netlify Functions → refresco TTL y endpoints de favoritos.
+	•	Caché TTL 24 h: evita golpear la PokéAPI en cada request.
 
-## Fase 1: Configuración Inicial y Estructura Base
+⸻
 
-El objetivo de esta fase es establecer una base sólida para el proyecto.
+Fase 0 – Arranque y BD remota
 
-1.  **Instalación de Dependencias**:
-    *   Ejecutar `bun install` para asegurar que todas las dependencias base de Astro estén instaladas.
+# Nuevo proyecto Astro
+npm create astro@latest pokedex-astro
+cd pokedex-astro
 
-2.  **Creación de Layouts**:
-    *   Crear un layout principal en `src/layouts/MainLayout.astro`.
-    *   Este layout contendrá la estructura HTML base (`<head>`, `<body>`), importará fuentes, y definirá los estilos globales con Tailwind CSS.
+# Añadir Astro DB
+npx astro add db
 
-3.  **Estructura de Páginas**:
-    *   Modificar `src/pages/index.astro` para que sea la página principal que mostrará el listado de Pokémon.
-    *   Crear una ruta dinámica `src/pages/pokemon/[id].astro` que servirá para mostrar la página de detalle de cada Pokémon.
+# Turso CLI
+turso auth login
+turso db create pokedex-db
+turso db tokens create pokedex-db --read-write
 
-## Fase 2: Integración de API y Fetching de Datos
+Guarda DATABASE_URL y TURSO_AUTH_TOKEN en .env.
 
-En esta fase nos conectaremos a una fuente de datos externa para obtener la información de los Pokémon.
+⸻
 
-1.  **Selección de API**:
-    *   Utilizaremos la **PokeAPI (pokeapi.co)** como fuente de datos principal por ser gratuita y completa.
+Fase 1 – Esquema SQL y migraciones
 
-2.  **Servicio de Datos**:
-    *   Crear un archivo de utilidad (ej. `src/services/pokemon.ts`) para encapsular la lógica de fetching.
-    *   Implementar funciones para:
-        *   `getPokemons(limit, offset)`: Obtener un listado paginado de Pokémon.
-        *   `getPokemonDetails(id)`: Obtener los detalles de un Pokémon específico por su ID o nombre.
+// src/db/config.ts
+import { defineDb, defineTable, integer, text, timestamp } from "astro:db";
 
-3.  **Renderizado en la Página Principal**:
-    *   En `src/pages/index.astro`, usar la función `getPokemons` para obtener la primera generación de Pokémon y pasarlos como `props` a un componente de listado.
+export const Pokemon = defineTable({
+  columns: {
+    id: integer("id").primary(),
+    name: text("name"),
+    sprite: text("sprite"),
+    updatedAt: timestamp("updated_at")
+  }
+});
 
-## Fase 3: Creación de Componentes de UI
+export const Favorite = defineTable({
+  columns: {
+    pokemonId: integer("pokemon_id").references(() => Pokemon.id)
+  }
+});
 
-Desarrollaremos los componentes reutilizables que formarán la interfaz de usuario.
+export default defineDb({ tables: { Pokemon, Favorite } });
 
-1.  **Tarjeta de Pokémon (`PokemonCard.astro`)**:
-    *   Crear un componente en `src/components/PokemonCard.astro`.
-    *   Mostrará la imagen, el nombre y el número del Pokémon.
-    *   Al hacer clic, deberá navegar a la página de detalle (`/pokemon/[id]`).
+npx astro db push          # local
+npx astro db push --remote # Turso
 
-2.  **Listado de Pokémon (`PokemonList.astro`)**:
-    *   Crear `src/components/PokemonList.astro` que recibirá un array de Pokémon y renderizará una `PokemonCard` por cada uno.
 
-3.  **Vista de Detalle (`PokemonDetail.astro`)**:
-    *   Crear `src/components/PokemonDetail.astro` para ser usado dentro de `src/pages/pokemon/[id].astro`.
-    *   Mostrará información detallada: imagen, tipos, estadísticas (HP, ataque, defensa, etc.), altura y peso.
+⸻
 
-## Fase 4: Funcionalidad Interactiva
+Fase 2 – Seed inicial (151 Pokémon)
 
-Añadiremos interactividad en el lado del cliente para mejorar la experiencia de usuario.
+// src/db/seed.ts
+import { db, Pokemon } from "astro:db";
+const list = await fetch("https://pokeapi.co/api/v2/pokemon?limit=151").then(r => r.json());
+await db.insert(Pokemon).values(
+  list.results.map((p, i) => ({
+    id: i + 1,
+    name: p.name,
+    sprite: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${i+1}.png`,
+    updatedAt: new Date()
+  }))
+);
 
-1.  **Búsqueda y Filtrado**:
-    *   Implementar un componente interactivo (usando SolidJS o Preact, siguiendo las directrices de `GEMINI.md`) para filtrar el listado de Pokémon por nombre.
-    *   Este componente se integrará en `index.astro` con una directiva `client:load`.
+npx astro db seed --remote
 
-2.  **Paginación**:
-    *   Añadir botones de "Siguiente" y "Anterior" en la página principal para cargar más Pokémon utilizando las funciones de fetching con `limit` y `offset`.
 
-3.  **Estilos Dinámicos**:
-    *   Aplicar estilos de Tailwind CSS que cambien según el tipo de Pokémon (ej. fondo de color fuego para Charmander).
+⸻
 
-## Fase 5: Pruebas y Despliegue
+Fase 3 – SSR + caché TTL
 
-Aseguraremos la calidad del proyecto y lo prepararemos para producción.
+astro.config.mjs
 
-1.  **Verificación con Astro Check**:
-    *   Ejecutar `bun astro check` para validar la correctitud de tipos en el proyecto.
+import netlify from "@astrojs/netlify";
+export default {
+  output: "server",
+  adapter: netlify({ edge: false })
+};
 
-2.  **Construcción para Producción**:
-    *   Generar el build de producción con `bun build`.
+	•	index.astro: consulta a Astro DB ➜ si updatedAt > 24 h, refetch sprite y UPDATE.
+	•	/favorites: INNER JOIN Pokémon ✕ Favorite.
+	•	/api/fav: endpoint POST para insertar favorito idempotente.
 
-3.  **Previsualización Local**:
-    *   Verificar que el sitio funcione correctamente con `bun preview`.
+⸻
 
-4.  **Despliegue**:
-    *   Configurar el flujo de trabajo de GitHub Actions (`deploy.yml`) para desplegar automáticamente el sitio en una plataforma como Vercel o Netlify.
+Fase 4 – UI reutilizable
 
-Este plan nos proporciona una hoja de ruta clara para construir la `pokeDB` de manera incremental y organizada.
+Componente	Archivo
+Layout base	src/layouts/MainLayout.astro
+Tarjeta Pokémon	src/components/PokemonCard.astro
+Lista + filtro	src/components/PokemonList.astro
+Vista favoritos	src/pages/favorites.astro
+
+
+⸻
+
+Fase 5 – Interactividad
+	•	Filtro en cliente (client:load, vanilla JS).
+	•	Estado favorito: actualiza UI tras POST; opcional island SolidJS.
+
+⸻
+
+Fase 6 – Tests y CI/CD
+	1.	npm run dev (SSR local).
+	2.	npm run build && npm run preview.
+	3.	Netlify: importar repo, setear vars y desplegar.
+
+⸻
+
+Comandos útiles
+
+npm run dev                     # SSR local
+npx astro db push --remote      # migraciones en Turso
+npx astro db seed --remote      # seed Pokémon
+netlify open                    # vista deploy
+turso db shell pokedex-db       # consola SQL
+
+
+⸻
+
+Próximos pasos
+	•	Monitorizar métricas en el dashboard Turso.
+	•	Preparar GIF y capturas para LinkedIn, X/Twitter y Threads.
+	•	Abrir issues para paginación o +Pokémon.
+
+⸻
+
+Licencia MIT
+
+¡Forks, estrellas y PRs son bienvenidos! 🐾🚀

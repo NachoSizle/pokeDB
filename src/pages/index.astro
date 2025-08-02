@@ -1,16 +1,16 @@
 ---
+import MainLayout from '../layouts/MainLayout.astro';
+import PokemonList from '../components/PokemonList.astro';
+import { getPokemons, getPokemonDetailsInParallel } from '../services/pokemon';
 
+// 🚀 Obtenemos los primeros 20 Pokémon para óptimo rendimiento inicial
+const pokemonListResponse = await getPokemons(20, 0);
+const pokemonDetails = await getPokemonDetailsInParallel(pokemonListResponse.results);
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<MainLayout 
+  title="PokéDB - Tu Pokédex Digital Definitiva" 
+  description="Explora el mundo Pokémon con nuestra Pokédex digital. Descubre tipos, estadísticas y características de todos los Pokémon."
+>
+  <PokemonList pokemons={pokemonDetails} />
+</MainLayout>

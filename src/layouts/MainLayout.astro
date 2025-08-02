@@ -1,0 +1,82 @@
+---
+import '../styles/global.css';
+import { Image } from 'astro:assets';
+
+export interface Props {
+  title: string;
+  description: string;
+  image?: string;
+}
+
+const {
+  title,
+  description,
+  image = "/favicon.svg",
+} = Astro.props;
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+
+    <!-- Preconnect para mejor rendimiento -->
+    <link rel="preconnect" href="https://pokeapi.co" />
+    
+    <!-- SEO -->
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalURL} />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:image" content={new URL(image, Astro.site)} />
+    <meta property="og:type" content="website" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={new URL(image, Astro.site)} />
+  </head>
+  <body class="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <header class="sticky top-0 z-50 bg-slate-900/80 backdrop-blur-lg border-b border-purple-500/20">
+      <div class="container mx-auto px-4 py-4 max-w-7xl">
+        <nav class="flex items-center justify-between">
+          <a href="/" class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
+            PokéDB
+          </a>
+          
+          <!-- Logo personal -->
+          <div class="flex items-center">
+            <Image 
+              src="/logo.webp"
+              alt="Logo personal"
+              width={40}
+              height={40}
+              class="rounded-full ring-2 ring-purple-400/50 hover:ring-purple-400 transition-all duration-300 hover:scale-110"
+              loading="eager"
+              decoding="sync"
+            />
+          </div>
+        </nav>
+      </div>
+    </header>
+    
+    <main class="container mx-auto px-4 py-8">
+      <slot />
+    </main>
+    
+    <footer class="mt-16 border-t border-purple-500/20 bg-slate-900/50">
+      <div class="container mx-auto px-4 py-8 text-center text-slate-400">
+        <p>🚀 Construido con <span class="text-purple-400">Astro</span> y <span class="text-blue-400">Tailwind CSS</span></p>
+      </div>
+    </footer>
+  </body>
+</html>
