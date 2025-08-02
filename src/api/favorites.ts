@@ -2,7 +2,7 @@
 // POST: Añade/remueve Pokémon de favoritos
 
 import type { APIRoute } from 'astro';
-import { addToFavorites, removeFromFavorites } from '../../services/pokemonDB';
+import { addToFavorites, removeFromFavorites } from '../services/pokemonDB';
 
 export const POST: APIRoute = async ({ request }) => {
   try {
@@ -104,7 +104,7 @@ export const POST: APIRoute = async ({ request }) => {
 // GET: Obtiene todos los favoritos
 export const GET: APIRoute = async () => {
   try {
-    const { getFavoritePokemon } = await import('../../services/pokemonDB');
+    const { getFavoritePokemon } = await import('../services/pokemonDB');
     const favorites = await getFavoritePokemon();
     
     return new Response(
