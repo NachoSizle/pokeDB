@@ -1,7 +1,7 @@
 // 🗄️ Configuración de Astro DB - PokeDB
 // Esquema SQL para Pokémon y favoritos con Turso (libSQL)
 
-import { defineDb, defineTable, column } from "astro:db";
+import { defineDb, defineTable, column } from 'astro:db';
 
 // 🐾 Tabla principal de Pokémon
 export const Pokemon = defineTable({
@@ -21,9 +21,10 @@ export const Favorite = defineTable({
 });
 
 // 📊 Exportar configuración de la base de datos
-export default defineDb({ 
+// https://astro.build/db/config
+export default defineDb({
   tables: { 
     Pokemon, 
     Favorite 
-  } 
+  }
 });
