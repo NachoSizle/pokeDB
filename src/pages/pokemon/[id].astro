@@ -1,200 +1,164 @@
 ---
+// 🔍 Página de detalle de Pokémon individual
+// Muestra información completa con funcionalidad de favoritos
+
+import { getPokemonById, isFavorite } from '../../services/pokemonDB';
+import { getPokemonDetails } from '../../services/pokemon';
 import MainLayout from '../../layouts/MainLayout.astro';
-import { getPokemonDetails, getPokemons, getTypeColor, capitalize } from '../../services/pokemon';
 
-// Función requerida para rutas dinámicas en Astro
-export async function getStaticPaths() {
-  // Obtenemos los primeros 151 Pokémon (primera generación) para pre-generar las páginas
-  const pokemonListResponse = await getPokemons(151, 0);
-  
-  return pokemonListResponse.results.map((pokemon) => ({
-    params: { id: pokemon.id.toString() },
-  }));
-}
-
-// Obtenemos el ID del Pokémon desde los parámetros de la URL
+// 📋 Obtener parámetros de la URL
 const { id } = Astro.params;
 
-if (!id) {
-  return Astro.redirect('/');
+// 🔍 Validar el ID
+if (!id || isNaN(Number(id))) {
+  return Astro.redirect('/404');
 }
 
-// Obtenemos los detalles del Pokémon
+const pokemonId = Number(id);
+
+// 📱 Obtener datos del Pokémon
 let pokemon;
+let pokemonDetails;
+let isCurrentlyFavorite = false;
+
 try {
-  pokemon = await getPokemonDetails(id);
+  // 🎯 Datos básicos desde nuestro servicio
+  pokemon = await getPokemonById(pokemonId);
+  
+  if (!pokemon) {
+    return Astro.redirect('/404');
+  }
+  
+  // 🌟 Detalles completos desde PokéAPI
+  pokemonDetails = await getPokemonDetails(pokemonId);
+  
+  // 💖 Estado de favorito
+  isCurrentlyFavorite = await isFavorite(pokemonId);
+  
 } catch (error) {
-  console.error('Error loading Pokémon:', error);
+  console.error(`Error obteniendo datos del Pokémon ${pokemonId}:`, error);
   return Astro.redirect('/');
 }
 
-// Preparamos datos para la UI
-const imageUrl = pokemon.sprites.other['official-artwork']?.front_default || pokemon.sprites.front_default;
-const primaryType = pokemon.types[0]?.type.name || 'normal';
-const typeColorGradient = getTypeColor(primaryType);
-
-// Estadísticas organizadas para mostrar
-const statNames: Record<string, string> = {
-  'hp': 'HP',
-  'attack': 'Ataque',
-  'defense': 'Defensa',
-  'special-attack': 'At. Especial',
-  'special-defense': 'Def. Especial',
-  'speed': 'Velocidad'
-};
+// 🎨 Metadatos de la página
+const pageTitle = `${pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)} (#${pokemonId}) - PokeDB`;
+const pageDescription = `Información detallada de ${pokemon.name}, incluyendo stats, tipos y habilidades. Pokémon #${pokemonId} en PokeDB.`;
 ---
 
-<MainLayout 
-  title={`${capitalize(pokemon.name)} - PokéDB`}
-  description={`Conoce todos los detalles de ${capitalize(pokemon.name)}: tipos, estadísticas, altura, peso y más información.`}
->
-  <div class="max-w-4xl mx-auto">
-    <!-- Botón de regreso -->
-    <div class="mb-8">
+<MainLayout title={pageTitle} description={pageDescription}>
+  <!-- 🔙 Navegación -->
+  <div class="pt-8 px-4">
+    <div class="max-w-7xl mx-auto">
       <a 
-        href="/" 
-        class="inline-flex items-center gap-2 text-purple-400 hover:text-purple-300 transition-colors"
+        href="/"
+        class="inline-flex items-center gap-2 px-4 py-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg shadow-md hover:shadow-lg transition-all duration-300 text-gray-700 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400"
       >
-        ← Volver a la Pokédex
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+        Volver a la Pokédex
       </a>
     </div>
+  </div>
 
-    <!-- Contenido principal -->
-    <div class="grid lg:grid-cols-2 gap-8 mb-12">
-      <!-- Sección izquierda: Imagen y datos básicos -->
-      <div class="flex flex-col space-y-6">
-        <!-- Imagen principal -->
-        <div class="relative">
-          <div class={`absolute inset-0 bg-gradient-to-br ${typeColorGradient} opacity-30 rounded-3xl blur-2xl`}></div>
-          <div class={`relative bg-slate-800/50 rounded-3xl p-8 backdrop-blur-sm border border-slate-700/50 type-${primaryType}`}>
-            <div class="text-center">
-              <div class="text-sm font-mono text-slate-400 mb-2">
-                #{pokemon.id.toString().padStart(3, '0')}
-              </div>
+  <!-- 🎨 Contenido principal -->
+  <section class="py-4 md:py-16 px-4">
+    <div class="max-w-7xl mx-auto">
+      
+      <!-- 🃏 Tarjeta principal del Pokémon -->
+      <div class="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 mb-8">
+        <div class="grid md:grid-cols-2 gap-8 items-center">
+          
+          <!-- 🖼️ Imagen y datos básicos -->
+          <div class="text-center">
+            <div class="relative inline-block">
               <img 
-                src={imageUrl}
-                alt={`${capitalize(pokemon.name)} - Pokémon`}
-                class="w-full max-w-xs mx-auto h-64 object-contain drop-shadow-2xl mb-6"
-                width="300"
-                height="300"
+                src={pokemon.sprite}
+                alt={`Sprite de ${pokemon.name}`}
+                width="200"
+                height="200"
+                class="w-48 h-48 mx-auto object-contain"
+                loading="eager"
+                decoding="sync"
               />
-              <h1 class="text-4xl font-bold text-white capitalize mb-4">
+              
+              <!-- 💖 Botón de favorito -->
+              <button 
+                id="favorite-btn"
+                data-pokemon-id={pokemonId}
+                data-is-favorite={isCurrentlyFavorite}
+                class="absolute top-0 right-0 w-12 h-12 rounded-full bg-white/90 dark:bg-gray-800/90 shadow-lg flex items-center justify-center text-2xl hover:scale-110 transition-all duration-300"
+                aria-label={isCurrentlyFavorite ? "Quitar de favoritos" : "Añadir a favoritos"}
+              >
+                <span id="heart-icon">{isCurrentlyFavorite ? '❤️' : '🤍'}</span>
+              </button>
+            </div>
+            
+            <!-- 📊 ID y nombre -->
+            <div class="mt-6">
+              <div class="text-lg font-mono text-gray-500 dark:text-gray-400 mb-2">
+                #{pokemonId.toString().padStart(3, '0')}
+              </div>
+              <h1 class="text-4xl font-bold text-gray-800 dark:text-white capitalize mb-4">
                 {pokemon.name}
               </h1>
-              
-              <!-- Tipos -->
-              <div class="flex gap-3 justify-center flex-wrap">
-                {pokemon.types.map((typeInfo) => (
-                  <span 
-                    class={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium text-white bg-gradient-to-r ${getTypeColor(typeInfo.type.name)} shadow-lg`}
-                  >
-                    {capitalize(typeInfo.type.name)}
-                  </span>
-                ))}
-              </div>
             </div>
           </div>
-        </div>
-
-        <!-- Contenedor flex para altura/peso y experiencia base -->
-        <div class="flex flex-col space-y-6 flex-grow">
-          <!-- Características físicas -->
-          <div class="grid grid-cols-2 gap-4">
-            <div class="bg-slate-800/50 rounded-2xl p-6 border border-slate-700/50 backdrop-blur-sm">
-              <div class="text-center">
-                <div class="text-3xl mb-2">📏</div>
-                <div class="text-slate-400 text-sm mb-1">Altura</div>
-                <div class="text-2xl font-bold text-white">{pokemon.height / 10} m</div>
-              </div>
-            </div>
-            <div class="bg-slate-800/50 rounded-2xl p-6 border border-slate-700/50 backdrop-blur-sm">
-              <div class="text-center">
-                <div class="text-3xl mb-2">⚖️</div>
-                <div class="text-slate-400 text-sm mb-1">Peso</div>
-                <div class="text-2xl font-bold text-white">{pokemon.weight / 10} kg</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Experiencia base - Se alineará con Sprites -->
-          <div class="bg-slate-800/50 rounded-2xl p-4 border border-slate-700/50 backdrop-blur-sm mt-auto">
-            <div class="text-center">
-              <div class="text-4xl mb-3">⭐</div>
-              <div class="text-slate-400 text-sm mb-2">Experiencia Base</div>
-              <div class="text-3xl font-bold text-white mb-2">{pokemon.base_experience}</div>
-              <div class="text-slate-500 text-xs">puntos de experiencia</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Sección derecha: Estadísticas -->
-      <div class="space-y-6">
-        <div class="bg-slate-800/50 rounded-3xl p-8 border border-slate-700/50 backdrop-blur-sm">
-          <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-2">
-            📊 Estadísticas Base
-          </h2>
           
-          <div class="space-y-4">
-            {pokemon.stats.map((statInfo) => {
-              const statName = statNames[statInfo.stat.name] || capitalize(statInfo.stat.name);
-              const percentage = Math.min((statInfo.base_stat / 255) * 100, 100);
-              
-              return (
-                <div class="space-y-2">
-                  <div class="flex justify-between items-center">
-                    <span class="text-slate-300 font-medium">{statName}</span>
-                    <span class="text-white font-bold">{statInfo.base_stat}</span>
-                  </div>
-                  <div class="w-full bg-slate-700 rounded-full h-3 overflow-hidden">
-                    <div 
-                      class={`h-full bg-gradient-to-r ${typeColorGradient} transition-all duration-1000 ease-out rounded-full`}
-                      style={`width: ${percentage}%`}
-                    ></div>
-                  </div>
+          <!-- 📈 Información detallada -->
+          <div class="space-y-6">
+            
+            <!-- 🏷️ Tipos -->
+            {pokemonDetails.types && pokemonDetails.types.length > 0 && (
+              <div>
+                <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">Tipos</h3>
+                <div class="flex gap-2">
+                  {pokemonDetails.types.map((typeInfo) => (
+                    <span class="px-3 py-1 rounded-full text-sm font-medium text-white bg-gradient-to-r from-purple-500 to-blue-500">
+                      {typeInfo.type.name}
+                    </span>
+                  ))}
                 </div>
-              );
-            })}
-          </div>
-
-          <!-- Total de estadísticas -->
-          <div class="mt-6 pt-6 border-t border-slate-700">
-            <div class="flex justify-between items-center">
-              <span class="text-slate-300 font-medium">Total</span>
-              <span class="text-white font-bold text-lg">
-                {pokemon.stats.reduce((total, stat) => total + stat.base_stat, 0)}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Sprites adicionales -->
-        <div class="bg-slate-800/50 rounded-3xl p-8 border border-slate-700/50 backdrop-blur-sm">
-          <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-2">
-            🎨 Sprites
-          </h2>
-          <div class="grid grid-cols-2 gap-4">
-            <div class="text-center">
-              <div class="text-slate-400 text-sm mb-2">Normal</div>
-              <div class="bg-slate-700/30 rounded-xl p-4">
-                <img 
-                  src={pokemon.sprites.front_default}
-                  alt={`${capitalize(pokemon.name)} normal`}
-                  class="w-full h-24 object-contain"
-                  loading="lazy"
-                />
+              </div>
+            )}
+            
+            <!-- 📏 Medidas -->
+            <div class="grid grid-cols-2 gap-4">
+              <div class="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                  {(pokemonDetails.height / 10).toFixed(1)}m
+                </div>
+                <div class="text-sm text-gray-600 dark:text-gray-400">Altura</div>
+              </div>
+              <div class="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                  {(pokemonDetails.weight / 10).toFixed(1)}kg
+                </div>
+                <div class="text-sm text-gray-600 dark:text-gray-400">Peso</div>
               </div>
             </div>
-            {pokemon.sprites.front_shiny && (
-              <div class="text-center">
-                <div class="text-slate-400 text-sm mb-2">Shiny ✨</div>
-                <div class="bg-slate-700/30 rounded-xl p-4">
-                  <img 
-                    src={pokemon.sprites.front_shiny}
-                    alt={`${capitalize(pokemon.name)} shiny`}
-                    class="w-full h-24 object-contain"
-                    loading="lazy"
-                  />
+            
+            <!-- 📊 Stats principales -->
+            {pokemonDetails.stats && pokemonDetails.stats.length > 0 && (
+              <div>
+                <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">Estadísticas</h3>
+                <div class="space-y-2">
+                  {pokemonDetails.stats.slice(0, 6).map((stat) => (
+                    <div class="flex items-center gap-3">
+                      <div class="w-28 text-sm text-gray-600 dark:text-gray-400 capitalize">
+                        {stat.stat.name}
+                      </div>
+                      <div class="flex-1 bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                        <div 
+                          class="bg-gradient-to-r from-green-400 to-blue-500 h-2 rounded-full transition-all duration-300"
+                          style={`width: ${Math.min(stat.base_stat / 150 * 100, 100)}%`}
+                        ></div>
+                      </div>
+                      <div class="w-8 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        {stat.base_stat}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
@@ -202,16 +166,54 @@ const statNames: Record<string, string> = {
         </div>
       </div>
     </div>
-  </div>
+  </section>
 </MainLayout>
 
-<style>
-  /* Animaciones para las barras de estadísticas */
-  @keyframes fillBar {
-    from { width: 0%; }
-  }
-  
-  .h-full {
-    animation: fillBar 1s ease-out;
-  }
-</style>
+<!-- 🎮 JavaScript para funcionalidad de favoritos -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const favoriteBtn = document.getElementById('favorite-btn');
+    const heartIcon = document.getElementById('heart-icon');
+    
+    if (!favoriteBtn || !heartIcon) return;
+    
+    favoriteBtn.addEventListener('click', async function() {
+      const pokemonId = this.dataset.pokemonId;
+      const currentlyFavorite = this.dataset.isFavorite === 'true';
+      
+      try {
+        // 🌐 Llamar a la API
+        const response = await fetch('/api/favorites', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            pokemonId: parseInt(pokemonId || '0'),
+            action: currentlyFavorite ? 'remove' : 'add'
+          })
+        });
+        
+        if (response.ok) {
+          // 🎨 Actualizar UI
+          const newFavoriteState = !currentlyFavorite;
+          this.dataset.isFavorite = newFavoriteState.toString();
+          heartIcon.textContent = newFavoriteState ? '❤️' : '🤍';
+          
+          // 🎪 Animación de feedback
+          this.style.transform = 'scale(1.2)';
+          setTimeout(() => {
+            this.style.transform = 'scale(1)';
+          }, 150);
+          
+          console.log(`💖 Pokémon ${pokemonId} ${newFavoriteState ? 'añadido a' : 'removido de'} favoritos`);
+        } else {
+          console.error('Error en la respuesta del servidor');
+        }
+        
+      } catch (error) {
+        console.error('Error al actualizar favoritos:', error);
+      }
+    });
+  });
+</script>

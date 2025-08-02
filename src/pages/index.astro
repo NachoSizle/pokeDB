@@ -1,16 +1,55 @@
 ---
+// 🏠 Página principal - PokeDB
+// SSR con caché TTL de 24 horas
+
 import MainLayout from '../layouts/MainLayout.astro';
 import PokemonList from '../components/PokemonList.astro';
-import { getPokemons, getPokemonDetailsInParallel } from '../services/pokemon';
+import { getAllPokemon } from '../services/pokemonDB';
 
-// 🚀 Obtenemos los primeros 20 Pokémon para óptimo rendimiento inicial
-const pokemonListResponse = await getPokemons(20, 0);
-const pokemonDetails = await getPokemonDetailsInParallel(pokemonListResponse.results);
+// � Obtener todos los Pokémon con caché TTL
+const pokemon = await getAllPokemon();
+
+const pageTitle = "PokeDB - Pokédex Completa";
+const pageDescription = `Descubre todos los ${pokemon.length} Pokémon de la primera generación. Base de datos optimizada con caché TTL y sprites oficiales.`;
 ---
 
-<MainLayout 
-  title="PokéDB - Tu Pokédex Digital Definitiva" 
-  description="Explora el mundo Pokémon con nuestra Pokédex digital. Descubre tipos, estadísticas y características de todos los Pokémon."
->
-  <PokemonList pokemons={pokemonDetails} />
+<MainLayout title={pageTitle} description={pageDescription}>
+	<!-- 🎨 Hero Section -->
+	<section class="relative py-20 px-4">
+		<div class="max-w-6xl mx-auto text-center">
+			<h1 class="text-5xl md:text-7xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-6">
+				PokeDB
+			</h1>
+			
+			<p class="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
+				Explora la <strong>Pokédex completa</strong> con datos actualizados, sprites oficiales 
+				y rendimiento optimizado con caché inteligente.
+			</p>
+			
+			<!-- 📊 Stats -->
+			<div class="flex flex-wrap justify-center gap-8 mb-12">
+				<div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl px-6 py-4 shadow-lg">
+					<div class="text-3xl font-bold text-blue-600 dark:text-blue-400">{pokemon.length}</div>
+					<div class="text-sm text-gray-600 dark:text-gray-400">Pokémon</div>
+				</div>
+				
+				<div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl px-6 py-4 shadow-lg">
+					<div class="text-3xl font-bold text-purple-600 dark:text-purple-400">SSR</div>
+					<div class="text-sm text-gray-600 dark:text-gray-400">Optimizado</div>
+				</div>
+				
+				<div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl px-6 py-4 shadow-lg">
+					<div class="text-3xl font-bold text-indigo-600 dark:text-indigo-400">24h</div>
+					<div class="text-sm text-gray-600 dark:text-gray-400">Caché TTL</div>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<!-- 🎮 Pokemon Grid -->
+	<section class="pb-20 px-4">
+		<div class="max-w-7xl mx-auto">
+			<PokemonList pokemons={pokemon} />
+		</div>
+	</section>
 </MainLayout>

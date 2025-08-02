@@ -1,92 +1,58 @@
 ---
-// 🎨 Tarjeta de Pokémon - Componente optimizado para rendimiento
-import type { PokemonDetails } from '../services/pokemon';
-import { getTypeColor, capitalize } from '../services/pokemon';
+// 🃏 Componente PokemonCard - Tarjeta individual de Pokémon
+// Diseño simplificado para PokemonData
 
-export interface Props {
-  pokemon: PokemonDetails;
+import type { PokemonData } from '../services/pokemonDB';
+
+interface Props {
+  pokemon: PokemonData;
 }
 
 const { pokemon } = Astro.props;
 
-// Obtener la imagen de mejor calidad disponible
-const imageUrl = pokemon.sprites.other['official-artwork']?.front_default || pokemon.sprites.front_default;
-
-// Obtener el tipo principal para el color de fondo
-const primaryType = pokemon.types[0]?.type.name || 'normal';
-const typeColorGradient = getTypeColor(primaryType);
+// 🎨 Clases de estilo dinámicas
+const cardClasses = "group relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-gray-200/50 dark:border-gray-700/50";
 ---
 
-<article 
-  class={`pokemon-card relative overflow-hidden rounded-2xl bg-slate-800/50 border border-slate-700/50 p-6 backdrop-blur-sm hover:border-purple-500/50 type-${primaryType}`}
->
-  <!-- Número del Pokémon -->
-  <div class="absolute top-4 right-4 z-10 bg-black/40 backdrop-blur-sm rounded-lg px-2 py-1 text-xs font-mono text-slate-200 font-semibold border border-slate-600/50">
-    #{pokemon.id.toString().padStart(3, '0')}
-  </div>
-  
-  <!-- Imagen del Pokémon -->
-  <div class="relative mb-4">
-    <div class={`absolute inset-0 bg-gradient-to-br ${typeColorGradient} opacity-20 rounded-xl blur-xl`}></div>
-    <div class="relative bg-slate-700/30 rounded-xl p-4 backdrop-blur-sm">
-      <img 
-        src={imageUrl}
-        alt={`${capitalize(pokemon.name)} - Pokémon`}
-        class="w-full h-32 object-contain drop-shadow-2xl"
-        loading="lazy"
-        decoding="async"
-        width="128"
-        height="128"
-      />
+<article class={cardClasses}>
+  <!-- ❤️ Indicador de favorito -->
+  {pokemon.isFavorite && (
+    <div class="absolute top-3 right-3 text-red-500 text-lg animate-pulse">
+      ❤️
     </div>
+  )}
+  
+  <!-- 🖼️ Imagen del Pokémon -->
+  <div class="flex justify-center mb-4">
+    <img 
+      src={pokemon.sprite}
+      alt={`Sprite de ${pokemon.name}`}
+      width="96"
+      height="96"
+      class="w-24 h-24 object-contain group-hover:scale-110 transition-transform duration-300"
+      loading="lazy"
+      decoding="async"
+    />
   </div>
   
-  <!-- Información del Pokémon -->
-  <div class="space-y-3">
-    <!-- Nombre -->
-    <h3 class="text-xl font-bold text-white capitalize tracking-wide">
+  <!-- 📊 Información del Pokémon -->
+  <div class="text-center space-y-2">
+    <!-- 🏷️ ID -->
+    <div class="text-sm font-mono text-gray-500 dark:text-gray-400">
+      #{pokemon.id.toString().padStart(3, '0')}
+    </div>
+    
+    <!-- 📛 Nombre -->
+    <h3 class="text-xl font-bold text-gray-800 dark:text-white capitalize group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300">
       {pokemon.name}
     </h3>
     
-    <!-- Tipos -->
-    <div class="flex gap-2 flex-wrap">
-      {pokemon.types.map((typeInfo) => (
-        <span 
-          class={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium text-white bg-gradient-to-r ${getTypeColor(typeInfo.type.name)} shadow-lg`}
-        >
-          {capitalize(typeInfo.type.name)}
-        </span>
-      ))}
-    </div>
-    
-    <!-- Estadísticas básicas -->
-    <div class="grid grid-cols-2 gap-3 text-sm">
-      <div class="bg-slate-700/30 rounded-lg p-2 backdrop-blur-sm">
-        <span class="text-slate-400 block text-xs">Altura</span>
-        <span class="text-white font-semibold">{pokemon.height / 10} m</span>
-      </div>
-      <div class="bg-slate-700/30 rounded-lg p-2 backdrop-blur-sm">
-        <span class="text-slate-400 block text-xs">Peso</span>
-        <span class="text-white font-semibold">{pokemon.weight / 10} kg</span>
-      </div>
-    </div>
-    
-    <!-- Botón para ver detalles -->
+    <!-- 🔗 Enlace al detalle -->
     <a 
       href={`/pokemon/${pokemon.id}`}
-      class={`block w-full py-3 px-4 rounded-xl font-medium text-center text-white bg-gradient-to-r ${typeColorGradient} hover:scale-[1.02] transition-all duration-200 shadow-lg hover:shadow-xl`}
+      class="inline-block mt-4 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-lg shadow-md hover:shadow-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-300"
     >
-      Ver detalles →
+      Ver detalles
     </a>
   </div>
 </article>
-
-<style>
-  .pokemon-card {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  
-  .pokemon-card:hover {
-    transform: translateY(-4px);
-  }
-</style>

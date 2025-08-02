@@ -1,0 +1,83 @@
+---
+// ⭐ Página de Pokémon Favoritos
+// Muestra todos los Pokémon marcados como favoritos
+
+import MainLayout from '../layouts/MainLayout.astro';
+import PokemonList from '../components/PokemonList.astro';
+import { getFavoritePokemon } from '../services/pokemonDB';
+
+// 💖 Obtener todos los Pokémon favoritos
+const favorites = await getFavoritePokemon();
+
+const pageTitle = `Favoritos (${favorites.length}) - PokeDB`;
+const pageDescription = `Tus ${favorites.length} Pokémon favoritos en PokeDB. Gestiona tu colección personal de la primera generación.`;
+---
+
+<MainLayout title={pageTitle} description={pageDescription}>
+  <!-- 🔙 Botón volver -->
+  <div class="pt-4 px-4">
+    <div class="max-w-7xl mx-auto">
+      <a 
+        href="/"
+        class="inline-flex items-center gap-2 px-4 py-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg shadow-md hover:shadow-lg transition-all duration-300 text-gray-700 dark:text-gray-300 hover:text-pink-600 dark:hover:text-pink-400"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+        Volver a la Pokédex
+      </a>
+    </div>
+  </div>
+
+  <!-- 🎨 Hero Section -->
+  <section class="py-16 px-4">
+    <div class="max-w-6xl mx-auto text-center">
+      <h1 class="text-5xl md:text-7xl font-bold bg-gradient-to-r from-pink-500 to-red-500 bg-clip-text text-transparent mb-6">
+        ❤️ Favoritos
+      </h1>
+      
+      <p class="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-4 max-w-3xl mx-auto">
+        Tu colección personal de <strong>Pokémon favoritos</strong>
+      </p>
+      
+      {favorites.length > 0 ? (
+        <p class="text-gray-500 dark:text-gray-400 mb-12">
+          Has seleccionado <strong>{favorites.length}</strong> Pokémon como favoritos
+        </p>
+      ) : (
+        <p class="text-gray-500 dark:text-gray-400 mb-12">
+          Aún no tienes Pokémon favoritos. ¡Explora la Pokédex y añade algunos!
+        </p>
+      )}
+    </div>
+  </section>
+
+  <!-- 💖 Lista de favoritos -->
+  <section class="pb-20 px-4">
+    <div class="max-w-7xl mx-auto">
+      {favorites.length > 0 ? (
+        <PokemonList pokemons={favorites} />
+      ) : (
+        <!-- Estado vacío -->
+        <div class="text-center py-0">
+          <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-3xl shadow-2xl p-12 max-w-md mx-auto">
+            <div class="text-6xl mb-6">💔</div>
+            <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-4">
+              No hay favoritos aún
+            </h3>
+            <p class="text-gray-600 dark:text-gray-300 mb-8">
+              Explora la Pokédex y marca tus Pokémon favoritos haciendo clic en el corazón
+            </p>
+            <a 
+              href="/"
+              class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-pink-500 to-red-500 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+            >
+              <span>🔍</span>
+              Explorar Pokédex
+            </a>
+          </div>
+        </div>
+      )}
+    </div>
+  </section>
+</MainLayout>
