@@ -2,6 +2,9 @@
 // 🏠 Página principal - PokeDB
 // SSR con caché TTL de 24 horas
 
+export const prerender = true; // ✨ Pre-renderizar como estática'
+// SSR con caché TTL de 24 horas
+
 import MainLayout from '../layouts/MainLayout.astro';
 import PokemonList from '../components/PokemonList.astro';
 import { getAllPokemon } from '../services/pokemonDB';
