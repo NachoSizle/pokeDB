@@ -1,5 +1,5 @@
-// 🗄️ Servicio de Pokémon simplificado para Astro DB
-// Integra base de datos local con caché básico
+// 🗄️ Servicio de Pokémon optimizado - caché TTL con PokéAPI
+// Arquitectura resiliente para desarrollo y producción
 
 import { getPokemons, type PokemonListItem } from './pokemon';
 

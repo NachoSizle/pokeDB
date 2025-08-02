@@ -7,14 +7,14 @@ import critters from 'astro-critters';
 import tailwindcss from '@tailwindcss/vite';
 import netlify from '@astrojs/netlify';
 
-// import db from '@astrojs/db'; // 📦 Comentado para deployment inicial
+import db from '@astrojs/db';
 
 export default defineConfig({
   site: 'https://pokedb-astro.netlify.app', // 🌐 URL de producción en Netlify
   base: '/',
   output: 'server', // 🚀 Configuración SSR
   adapter: netlify(), // 🌐 Netlify Functions
-  integrations: [sitemap(), compressor(), critters()], // 📦 Removemos DB temporalmente para deployment
+  integrations: [sitemap(), compressor(), critters(), db()],
   build: {
     inlineStylesheets: "always",
   },

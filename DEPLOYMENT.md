@@ -24,14 +24,11 @@ git push origin main
    - **Publish directory**: `dist`
    - **Functions directory**: `dist/functions` (auto-detectado)
 
-### 3. ⚙️ Variables de entorno
+### 3. ⚙️ Variables de entorno (opcional)
 En Netlify Dashboard → Site settings → Environment variables:
 ```
 NODE_ENV=production
-# ASTRO_STUDIO_APP_TOKEN=tu_token_aqui (si usas Astro Studio)
 ```
-
-**Nota**: El proyecto funciona sin base de datos usando caché en memoria con PokéAPI. Para base de datos persistente, configurar Astro Studio.
 
 ### 4. 🎯 Deploy
 - Netlify detectará automáticamente el `netlify.toml`
@@ -49,7 +46,6 @@ NODE_ENV=production
 ### 🏗️ astro.config.mjs
 - ✅ Output: "server" (SSR habilitado)
 - ✅ Adapter: netlify()
-- ✅ Astro DB integrado (con --remote flag)
 - ✅ Optimizaciones de build
 - ✅ Configuración de imágenes remotas
 
@@ -65,8 +61,7 @@ NODE_ENV=production
 
 ### ✅ Optimizaciones
 - 🚀 Server-Side Rendering
-- �️ Astro DB con --remote flag
-- �💾 Caché TTL de 24 horas (memoria + DB)
+- 💾 Caché TTL de 24 horas
 - 🗜️ Compresión gzip/brotli
 - 🖼️ Optimización de imágenes
 - 🔒 Headers de seguridad

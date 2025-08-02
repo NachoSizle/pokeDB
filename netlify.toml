@@ -2,7 +2,7 @@
 # Optimizado para Astro SSR con Functions
 
 [build]
-  # 📦 Comando de build
+  # 📦 Comando de build con DB remota
   command = "npm run build"
   
   # 📁 Directorio de salida
