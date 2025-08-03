@@ -26,22 +26,6 @@ export interface PokemonData {
  * para asegurar que todos los datos estén disponibles de forma estática.
  */
 export async function getAllPokemon(): Promise<PokemonData[]> {
-  // --- BLOQUE DE DEPURACIÓN DE VERIFICACIÓN DE ENTORNO ---
-  const dbUrl = import.meta.env.ASTRO_DB_URL;
-  const authToken = import.meta.env.ASTRO_DB_AUTH_TOKEN;
-
-  console.log("--- INICIO DEPURACIÓN DE VARIABLES DE ENTORNO ---");
-  console.log(`[Vercel Env] ASTRO_DB_URL definida: ${!!dbUrl}`)
-  console.log(`[Vercel Env] ASTRO_DB_URL longitud: ${dbUrl?.length ?? 0}`)
-  console.log(`[Vercel Env] ASTRO_DB_AUTH_TOKEN definido: ${!!authToken}`)
-  console.log(`[Vercel Env] ASTRO_DB_AUTH_TOKEN longitud: ${authToken?.length ?? 0}`)
-  console.log("--- FIN DEPURACIÓN DE VARIABLES DE ENTORNO ---");
-
-  if (!dbUrl || !authToken) {
-    throw new Error("CRITICAL_ERROR: Las variables de entorno ASTRO_DB_URL o ASTRO_DB_AUTH_TOKEN no están disponibles en el entorno de build de Vercel.");
-  }
-  // --- FIN DEL BLOQUE DE DEPURACIÓN ---
-
   try {
     // 1. Intentar obtener los Pokémon de la base de datos
     const cachedPokemon = await db.select().from(PokemonTable).all();
