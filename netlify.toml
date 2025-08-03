@@ -1,5 +1,5 @@
 # 🚀 Configuración de Netlify para PokeDB
-# Configuración simplificada para SSR + Astro DB
+# Configuración completa para SSR + Astro DB
 
 [build]
   command = "bun run build"
