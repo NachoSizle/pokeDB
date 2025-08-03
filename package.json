@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "astro dev --remote",
     "dev:local": "astro dev",
-    "build": "astro build --remote",
+    "build": "astro build --remote && node scripts/fix-netlify-functions.js",
     "build:local": "astro build",
     "build:netlify": "rm -rf dist .netlify && astro check && astro build --remote && node scripts/fix-netlify-functions.js",
     "preview": "astro preview",

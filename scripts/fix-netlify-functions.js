@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 /**
- * 🔧 Script para organizar funciones de Netlify correctamente
- * Mueve solo entry.mjs como función principal SSR
+ * 🔧 Script para corregir rutas de redirects en Netlify
+ * Actualiza _redirects para usar la estructura correcta de Astro v5
  */
 
 import fs from 'fs';
@@ -10,36 +10,33 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const buildDir = path.join(__dirname, '..', '.netlify', 'build');
-const functionsDir = path.join(__dirname, '..', '.netlify', 'functions-internal');
+const redirectsPath = path.join(__dirname, '..', 'dist', '_redirects');
 
-if (!fs.existsSync(buildDir)) {
-  console.log('❌ Directorio .netlify/build no encontrado');
+if (!fs.existsSync(redirectsPath)) {
+  console.log('❌ Archivo _redirects no encontrado');
   process.exit(1);
 }
 
 try {
-  // Crear directorio de funciones si no existe
-  if (!fs.existsSync(functionsDir)) {
-    fs.mkdirSync(functionsDir, { recursive: true });
-    console.log('📁 Creado directorio .netlify/functions-internal');
-  }
-
-  // Copiar entry.mjs como la función SSR principal
-  const entrySource = path.join(buildDir, 'entry.mjs');
-  const entryDest = path.join(functionsDir, 'ssr.mjs');
+  // Leer el archivo _redirects actual
+  let redirectsContent = fs.readFileSync(redirectsPath, 'utf8');
+  console.log('� Contenido original de _redirects:');
+  console.log(redirectsContent);
   
-  if (fs.existsSync(entrySource)) {
-    fs.copyFileSync(entrySource, entryDest);
-    console.log('✅ Copiado entry.mjs → ssr.mjs');
-  } else {
-    console.log('❌ No se encontró entry.mjs');
-    process.exit(1);
-  }
-
-  console.log('🎉 Función SSR configurada correctamente');
+  // Reemplazar las rutas para que apunten a la función correcta
+  const updatedContent = redirectsContent.replace(
+    /\/.netlify\/functions\/ssr/g,
+    '/.netlify/v1/functions/ssr'
+  );
+  
+  // Escribir el archivo actualizado
+  fs.writeFileSync(redirectsPath, updatedContent);
+  
+  console.log('✅ Archivo _redirects actualizado:');
+  console.log(updatedContent);
+  console.log('🎉 Redirects corregidos para Astro v5');
   
 } catch (error) {
-  console.error('❌ Error al procesar funciones:', error.message);
+  console.error('❌ Error al procesar _redirects:', error.message);
   process.exit(1);
 }
