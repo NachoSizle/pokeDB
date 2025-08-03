@@ -1,0 +1,68 @@
+---
+// 🔍 Página de debug para verificar SSR
+const debugInfo = {
+  timestamp: new Date().toISOString(),
+  nodeEnv: process.env.NODE_ENV,
+  astroDbRemoteUrl: process.env.ASTRO_DB_REMOTE_URL ? 'SET' : 'NOT SET',
+  astroDbAppToken: process.env.ASTRO_DB_APP_TOKEN ? 'SET' : 'NOT SET'
+};
+---
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Debug - PokeDB</title>
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      padding: 2rem; 
+      background: #f5f5f5; 
+    }
+    .container { 
+      max-width: 600px; 
+      margin: 0 auto; 
+      background: white; 
+      padding: 2rem; 
+      border-radius: 8px; 
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .debug-item { 
+      margin: 1rem 0; 
+      padding: 0.5rem; 
+      background: #f8f9fa; 
+      border-left: 4px solid #007bff; 
+    }
+    .success { border-color: #28a745; }
+    .warning { border-color: #ffc107; }
+    .error { border-color: #dc3545; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔍 Debug SSR - PokeDB</h1>
+    <p>Esta página se genera en el servidor (SSR) para verificar que todo funciona correctamente.</p>
+    
+    <div class="debug-item success">
+      <strong>✅ SSR Funcionando:</strong> {debugInfo.timestamp}
+    </div>
+    
+    <div class="debug-item">
+      <strong>🌍 Entorno:</strong> {debugInfo.nodeEnv || 'development'}
+    </div>
+    
+    <div class={`debug-item ${debugInfo.astroDbRemoteUrl === 'SET' ? 'success' : 'error'}`}>
+      <strong>🗄️ ASTRO_DB_REMOTE_URL:</strong> {debugInfo.astroDbRemoteUrl}
+    </div>
+    
+    <div class={`debug-item ${debugInfo.astroDbAppToken === 'SET' ? 'success' : 'error'}`}>
+      <strong>🔑 ASTRO_DB_APP_TOKEN:</strong> {debugInfo.astroDbAppToken}
+    </div>
+    
+    <div class="debug-item">
+      <a href="/" style="color: #007bff; text-decoration: none;">← Volver al inicio</a>
+    </div>
+  </div>
+</body>
+</html>
