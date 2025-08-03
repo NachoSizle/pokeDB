@@ -7,8 +7,7 @@
 
 # 🔧 Configuración de funciones para Astro v5
 [functions]
-  directory = ".netlify/v1/functions"onfiguración de Netlify para PokeDB
-# Configuración completa para SSR + Astro DB
+  directory = ".netlify/v1/functions"
 
 [build]
   command = "bun run build"
