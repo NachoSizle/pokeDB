@@ -20,9 +20,7 @@
     "astro-compressor": "^1.1.1",
     "astro-critters": "^2.2.1",
     "tailwindcss": "^4.1.11",
-    "typescript": "^5.9.2"
-  },
-  "optionalDependencies": {
+    "typescript": "^5.9.2",
     "@rollup/rollup-linux-x64-gnu": "4.9.5"
   }
 }
