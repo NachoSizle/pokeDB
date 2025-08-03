@@ -98,15 +98,19 @@ export async function getPokemonById(id: number): Promise<PokemonData | null> {
  */
 export async function getFavoritePokemon(): Promise<PokemonData[]> {
   try {
-    const favoriteIdsResult = await db.select().from(FavoriteTable).all();
-    if (favoriteIdsResult.length === 0) return [];
+    const favoriteJoin = await db
+      .select({
+        id: PokemonTable.id,
+        name: PokemonTable.name,
+        sprite: PokemonTable.sprite,
+        types: PokemonTable.types,
+        stats: PokemonTable.stats,
+        updatedAt: PokemonTable.updatedAt,
+      })
+      .from(FavoriteTable)
+      .innerJoin(PokemonTable, eq(FavoriteTable.pokemonId, PokemonTable.id));
 
-    const allPokemon = await getAllPokemon();
-    const favoriteIdSet = new Set(favoriteIdsResult.map(f => f.pokemonId));
-    
-    return allPokemon
-      .filter(pokemon => favoriteIdSet.has(pokemon.id))
-      .map(pokemon => ({ ...pokemon, isFavorite: true }));
+    return favoriteJoin.map(p => ({ ...p, isFavorite: true }));
   } catch (error) {
     console.error("❌ Error obteniendo favoritos:", error);
     return [];

@@ -4,25 +4,30 @@
 
 export const prerender = true;
 
-import { getAllPokemon, isFavorite } from '../../services/pokemonDB';
+import { getAllPokemon } from '../../services/pokemonDB';
 import MainLayout from '../../layouts/MainLayout.astro';
 import { Image } from 'astro:assets';
 import FavoriteButton from '../../components/FavoriteButton.jsx';
 
 // 🚀 Genera todas las páginas de Pokémon en el momento del build
+import { db } from 'astro:db';
+import { Favorite } from '../../db/config';
+
+// 1. 🗺️ Generar las rutas estáticas para cada Pokémon
 export async function getStaticPaths() {
   const allPokemon = await getAllPokemon();
   
-  // Para cada Pokémon, determinamos si es un favorito
-  const paths = await Promise.all(allPokemon.map(async (pokemon) => {
-    const isFav = await isFavorite(pokemon.id);
-    return {
-      params: { id: String(pokemon.id) },
-      props: { pokemon, isInitiallyFavorite: isFav },
-    };
-  }));
+  // Optimización: Obtener todos los favoritos de una sola vez
+  const favoriteIdsResult = await db.select({ id: Favorite.pokemonId }).from(Favorite).all();
+  const favoriteIdSet = new Set(favoriteIdsResult.map(f => f.id));
 
-  return paths;
+  return allPokemon.map((pokemon) => {
+    const isInitiallyFavorite = favoriteIdSet.has(pokemon.id);
+    return {
+      params: { id: pokemon.id.toString() },
+      props: { pokemon, isInitiallyFavorite },
+    };
+  });
 }
 
 // props se reciben desde getStaticPaths
