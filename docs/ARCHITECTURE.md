@@ -33,7 +33,7 @@
                             │
 ┌─────────────────────────────────────────────────────┐
 │                 BACKEND                             │
-│  Netlify Functions + Astro DB + PokéAPI            │
+│  Vercel Functions + Astro DB + PokéAPI             │
 └─────────────────────────────────────────────────────┘
                             │
 ┌─────────────────────────────────────────────────────┐
@@ -47,7 +47,7 @@
 ```mermaid
 sequenceDiagram
     participant U as Usuario
-    participant N as Netlify
+    participant V as Vercel
     participant A as Astro SSR
     participant DB as Turso DB
     participant API as PokéAPI

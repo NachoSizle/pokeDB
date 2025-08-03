@@ -7,11 +7,11 @@
 **Pokédex completa con arquitectura SSR híbrida, base de datos Turso y caché TTL inteligente**
 
 [![Astro](https://img.shields.io/badge/Astro-v5.12.8-FF5D01?style=flat&logo=astro&logoColor=white)](https://astro.build)
-[![Netlify](https://img.shields.io/badge/Netlify-00C7B7?style=flat&logo=netlify&logoColor=white)](https://pokedb-astro.netlify.app)
+[![Vercel](https://img.shields.io/badge/Vercel-000000?style=flat&logo=vercel&logoColor=white)](https://pokedb-astro.vercel.app)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 
-[🚀 **Demo en Vivo**](https://pokedb-astro.netlify.app) • [📚 **Documentación**](#-características) • [🛠️ **Instalación**](#-instalación-local)
+[🚀 **Demo en Vivo**](https://pokedb-astro.vercel.app) • [📚 **Documentación**](#-características) • [🛠️ **Instalación**](#-instalación-local)
 
 </div>
 
@@ -28,7 +28,7 @@
 - 🗄️ **Base de Datos Turso** → SQL distribuido globalmente con Astro DB
 - ⏰ **Caché TTL 24h** → Sistema inteligente que evita llamadas innecesarias a PokéAPI
 - 💖 **Sistema de Favoritos** → CRUD completo con persistencia en base de datos
-- 🌐 **Netlify Functions** → Deploy serverless automático
+- 🌐 **Vercel Functions** → Deploy serverless automático con zero-config
 - 🎨 **Tailwind CSS v4** → Diseño moderno y responsivo
 - 📱 **PWA Ready** → Optimizado para móviles y desktop
 

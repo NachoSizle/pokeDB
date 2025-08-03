@@ -5,15 +5,15 @@ import sitemap from '@astrojs/sitemap';
 import compressor from 'astro-compressor';
 import critters from 'astro-critters';
 import tailwindcss from '@tailwindcss/vite';
-import netlify from '@astrojs/netlify';
+import vercel from '@astrojs/vercel';
 
 import db from '@astrojs/db';
 
 export default defineConfig({
-  site: 'https://pokedb-astro.netlify.app', // 🌐 URL de producción en Netlify
+  site: 'https://pokedb-astro.vercel.app', // 🌐 URL de producción en Vercel
   base: '/',
-  output: 'server', // 🚀 Volvemos a server pero con configuración simplificada
-  adapter: netlify(), // 🌐 Netlify adapter sin configuraciones extra
+  output: 'server', // 🚀 Configuración SSR
+  adapter: vercel(), // 🌐 Vercel adapter con zero-config
   integrations: [sitemap(), compressor(), critters(), db()],
   build: {
     inlineStylesheets: "always",
