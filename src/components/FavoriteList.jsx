@@ -1,9 +1,10 @@
 import { createResource, For, Show } from 'solid-js';
 import PokemonCard from './PokemonCard.astro';
 
-const fetchFavorites = async () => {
+const fetchFavorites = async (apiBase) => {
   try {
-    const response = await fetch('/api/favorites');
+    const url = new URL('/api/favorites', apiBase).href;
+    const response = await fetch(url);
     if (!response.ok) {
       throw new Error('Error fetching favorites');
     }
@@ -16,8 +17,8 @@ const fetchFavorites = async () => {
   }
 };
 
-function FavoriteList() {
-  const [favorites] = createResource(fetchFavorites);
+function FavoriteList(props) {
+  const [favorites] = createResource(() => props.apiBase, fetchFavorites);
 
   return (
     <Show when={!favorites.loading} fallback={<p>Cargando tus Pokémon favoritos...</p>}>
