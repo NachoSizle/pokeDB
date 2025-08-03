@@ -77,39 +77,39 @@ export async function getPokemonById(id: number): Promise<PokemonData | null> {
 }
 
 /**
- * ⭐ Obtiene todos los Pokémon favoritos (LÓGICA REFACTORIZADA SIN JOIN)
+ * ⭐ Obtiene todos los Pokémon favoritos (MODO DEPURACIÓN: CONSULTA CANARIO)
  */
 export async function getFavoritePokemon(): Promise<PokemonData[]> {
   try {
-    // Paso 1: Obtener todos los IDs de la tabla de favoritos.
-    const favoriteIdRows = await db.select({ pokemonId: FavoriteTable.pokemonId }).from(FavoriteTable).all();
+    console.log("--- INICIO CONSULTA CANARIO ---");
+    console.log("Ignorando la tabla 'Favorite', vamos a buscar a Pikachu (ID 25) en la tabla 'Pokemon'.");
 
-    // Si no hay favoritos, devolver un array vacío inmediatamente.
-    if (favoriteIdRows.length === 0) {
-      return [];
+    // Hacemos una consulta que sabemos que DEBE funcionar.
+    const pikachu = await db.select().from(PokemonTable).where(eq(PokemonTable.id, 25)).get();
+
+    if (!pikachu) {
+      console.log("Canario falló: No se pudo encontrar a Pikachu.");
+      throw new Error('La consulta canario falló, no se pudo obtener un Pokémon de la tabla Pokemon.');
     }
 
-    // Extraer los IDs a un array simple: [1, 4, 7]
-    const favoriteIds = favoriteIdRows.map(row => row.pokemonId);
+    console.log("¡Canario vivo! Se encontró a Pikachu exitosamente.");
+    console.log("--- FIN CONSULTA CANARIO ---");
 
-    // Paso 2: Obtener todos los datos de los Pokémon que están en la lista de IDs.
-    const favoritePokemons = await db.select().from(PokemonTable).where(inArray(PokemonTable.id, favoriteIds)).all();
-
-    // Mapear el resultado al formato esperado, añadiendo isFavorite = true
-    return favoritePokemons.map(p => ({ 
-      ...p,
-      id: p.id,
-      name: p.name || '',
-      sprite: p.sprite || '',
-      types: p.types ? (p.types as string[]) : [],
-      stats: p.stats ? (p.stats as Record<string, number>) : {},
-      updatedAt: p.updatedAt || new Date(),
-      isFavorite: true 
-    }));
+    // Devolvemos a Pikachu dentro de un array, como si fuera el único favorito.
+    return [{
+      ...pikachu,
+      id: pikachu.id,
+      name: pikachu.name || '',
+      sprite: pikachu.sprite || '',
+      types: pikachu.types ? (pikachu.types as string[]) : [],
+      stats: pikachu.stats ? (pikachu.stats as Record<string, number>) : {},
+      updatedAt: pikachu.updatedAt || new Date(),
+      isFavorite: true
+    }];
 
   } catch (error) {
-    console.error("❌ Error DETALLADO en getFavoritePokemon (sin JOIN):", error);
-    throw new Error(`Error de base de datos al obtener favoritos: ${error.message}`);
+    console.error("❌ Error DETALLADO en la consulta canario:", error);
+    throw new Error(`Error en la consulta canario: ${error.message}`);
   }
 }
 
