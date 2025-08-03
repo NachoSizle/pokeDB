@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import { Image } from 'astro:assets';
+import  SpeedInsights  from "@vercel/speed-insights/astro"
 
 export interface Props {
   title: string;
@@ -87,5 +88,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
         <p>🚀 Construido con <span class="text-purple-400">Astro</span> y <span class="text-blue-400">Tailwind CSS</span></p>
       </div>
     </footer>
+
+    <SpeedInsights />
   </body>
 </html>
