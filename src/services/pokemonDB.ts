@@ -30,8 +30,8 @@ export async function getAllPokemon(): Promise<PokemonData[]> {
     // 1. Intentar obtener los Pokémon de la base de datos
     const cachedPokemon = await db.select().from(PokemonTable).all();
 
-    // 2. Si la base de datos ya tiene datos, devolverlos directamente
-    if (cachedPokemon.length > 0) {
+    // 2. Si la base de datos ya tiene los 151 Pokémon, devolverlos directamente
+    if (cachedPokemon.length >= 151) {
       console.log(`✅ Usando datos de la base de datos - ${cachedPokemon.length} Pokémon`);
       return cachedPokemon.map(p => ({
         id: p.id,
@@ -110,7 +110,12 @@ export async function getFavoritePokemon(): Promise<PokemonData[]> {
       .from(FavoriteTable)
       .innerJoin(PokemonTable, eq(FavoriteTable.pokemonId, PokemonTable.id));
 
-    return favoriteJoin.map(p => ({ ...p, isFavorite: true }));
+    return favoriteJoin.map(p => ({ 
+      ...p, 
+      types: p.types as string[],
+      stats: p.stats as Record<string, number>,
+      isFavorite: true 
+    }));
   } catch (error) {
     console.error("❌ Error obteniendo favoritos:", error);
     return [];

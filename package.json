@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "astro dev --remote",
     "dev:local": "astro dev",
-    "build": "astro build --remote",
+    "build": "dotenv -- astro build --remote",
     "build:local": "astro build",
     "preview": "astro preview",
     "astro": "astro"
@@ -21,6 +21,7 @@
     "astro": "^5.12.8",
     "astro-compressor": "^1.1.1",
     "astro-critters": "^2.2.1",
+    "dotenv-cli": "^10.0.0",
     "solid-js": "^1.9.7",
     "tailwindcss": "^4.1.11",
     "typescript": "^5.9.2"

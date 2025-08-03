@@ -10,24 +10,34 @@ import { Image } from 'astro:assets';
 import FavoriteButton from '../../components/FavoriteButton.jsx';
 
 // 🚀 Genera todas las páginas de Pokémon en el momento del build
-import { db } from 'astro:db';
-import { Favorite } from '../../db/config';
+import { db, Favorite } from 'astro:db';
 
 // 1. 🗺️ Generar las rutas estáticas para cada Pokémon
 export async function getStaticPaths() {
-  const allPokemon = await getAllPokemon();
-  
-  // Optimización: Obtener todos los favoritos de una sola vez
-  const favoriteIdsResult = await db.select({ id: Favorite.pokemonId }).from(Favorite).all();
-  const favoriteIdSet = new Set(favoriteIdsResult.map(f => f.id));
+  try {
+    const allPokemon = await getAllPokemon();
+    
+    // Si no hay Pokémon, devolver un array vacío para evitar errores en build
+    if (!allPokemon || allPokemon.length === 0) {
+      console.warn("⚠️ No se encontraron Pokémon en la base de datos. Generando página vacía.");
+      return [];
+    }
 
-  return allPokemon.map((pokemon) => {
-    const isInitiallyFavorite = favoriteIdSet.has(pokemon.id);
-    return {
-      params: { id: pokemon.id.toString() },
-      props: { pokemon, isInitiallyFavorite },
-    };
-  });
+    // Optimización: Obtener todos los favoritos de una sola vez
+    const favoriteIdsResult = await db.select({ id: Favorite.pokemonId }).from(Favorite).all();
+    const favoriteIdSet = new Set(favoriteIdsResult.map(f => f.id));
+
+    return allPokemon.map((pokemon) => {
+      const isInitiallyFavorite = favoriteIdSet.has(pokemon.id);
+      return {
+        params: { id: pokemon.id.toString() },
+        props: { pokemon, isInitiallyFavorite },
+      };
+    });
+  } catch (error) {
+    console.error("❌ Error generando rutas estáticas:", error);
+    return [];
+  }
 }
 
 // props se reciben desde getStaticPaths
