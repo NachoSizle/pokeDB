@@ -30,3 +30,5 @@ pnpm-debug.log*
 bun.lock
 package-lock.json
 yarn.lock
+# Ignore npm lock file
+package-lock.json
