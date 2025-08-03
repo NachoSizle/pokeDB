@@ -7,11 +7,12 @@
     "dev:local": "astro dev",
     "build": "astro build --remote",
     "build:local": "astro build",
-    "build:netlify": "rm -rf dist .netlify && astro build --remote",
+    "build:netlify": "rm -rf dist .netlify && astro check && astro build --remote && node scripts/fix-netlify-functions.js",
     "preview": "astro preview",
     "astro": "astro"
   },
   "dependencies": {
+    "@astrojs/check": "^0.9.4",
     "@astrojs/db": "^0.16.0",
     "@astrojs/netlify": "^6.5.5",
     "@astrojs/sitemap": "^3.4.2",
@@ -19,6 +20,7 @@
     "astro": "^5.12.8",
     "astro-compressor": "^1.1.1",
     "astro-critters": "^2.2.1",
-    "tailwindcss": "^4.1.11"
+    "tailwindcss": "^4.1.11",
+    "typescript": "^5.9.2"
   }
 }

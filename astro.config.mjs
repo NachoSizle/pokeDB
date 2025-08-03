@@ -13,7 +13,9 @@ export default defineConfig({
   site: 'https://pokedb-astro.netlify.app', // 🌐 URL de producción en Netlify
   base: '/',
   output: 'server', // 🚀 Configuración SSR
-  adapter: netlify(), // 🌐 Netlify Functions
+  adapter: netlify({
+    edgeMiddleware: false
+  }), // 🌐 Netlify Functions
   integrations: [sitemap(), compressor(), critters(), db()],
   build: {
     inlineStylesheets: "always",

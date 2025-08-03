@@ -4,18 +4,11 @@
 [build]
   command = "bun run build:netlify"
   publish = "dist"
-  functions = ".netlify/build"
 
-[build.environment]
-  NODE_VERSION = "24"
-
-# 🛠️ Configuración de funciones
+# 🔧 Configuración de funciones con nombres válidos
 [functions]
   directory = ".netlify/build"
-  
-[functions.name]
-  name = "ssr"
-  from = ".netlify/build/entry.mjs"
+  included_files = ["**/*"]
 
 # 🎯 Headers para optimización
 [[headers]]
