@@ -1,136 +1,49 @@
 // 🌟 API Endpoint - Favoritos
-// POST: Añade/remueve Pokémon de favoritos
+// POST: Añade o remueve un Pokémon de la lista de favoritos (toggle).
 
 import type { APIRoute } from 'astro';
-import { addToFavorites, removeFromFavorites } from '../../services/pokemonDB';
+import { isFavorite, addToFavorites, removeFromFavorites, getFavoritePokemon } from '../../services/pokemonDB';
 
 export const POST: APIRoute = async ({ request }) => {
   try {
     const body = await request.json();
-    const { pokemonId, action } = body;
-    
-    // Validar datos de entrada
-    if (!pokemonId || !action) {
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'pokemonId y action son requeridos' 
-        }),
-        { 
-          status: 400,
-          headers: { 'Content-Type': 'application/json' }
-        }
-      );
+    const { pokemonId } = body;
+
+    if (!pokemonId || typeof pokemonId !== 'number' || pokemonId < 1 || pokemonId > 151) {
+      return new Response(JSON.stringify({ success: false, error: 'ID de Pokémon inválido.' }), { status: 400 });
     }
-    
-    if (!['add', 'remove'].includes(action)) {
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'action debe ser "add" o "remove"' 
-        }),
-        { 
-          status: 400,
-          headers: { 'Content-Type': 'application/json' }
-        }
-      );
-    }
-    
-    // Validar que pokemonId sea un número
-    const id = parseInt(pokemonId);
-    if (isNaN(id) || id < 1 || id > 151) {
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'pokemonId debe ser un número entre 1 y 151' 
-        }),
-        { 
-          status: 400,
-          headers: { 'Content-Type': 'application/json' }
-        }
-      );
-    }
-    
-    // Ejecutar acción
-    let result: boolean;
-    if (action === 'add') {
-      result = await addToFavorites(id);
+
+    const wasFavorite = await isFavorite(pokemonId);
+    let success = false;
+
+    if (wasFavorite) {
+      success = await removeFromFavorites(pokemonId);
     } else {
-      result = await removeFromFavorites(id);
+      success = await addToFavorites(pokemonId);
     }
-    
-    if (result) {
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: `Pokémon ${action === 'add' ? 'añadido a' : 'removido de'} favoritos`,
-          pokemonId: id,
-          action
-        }),
-        { 
-          status: 200,
-          headers: { 'Content-Type': 'application/json' }
-        }
-      );
+
+    if (success) {
+      return new Response(JSON.stringify({ 
+        success: true, 
+        isFavorite: !wasFavorite 
+      }), { status: 200 });
     } else {
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'Error procesando la solicitud' 
-        }),
-        { 
-          status: 500,
-          headers: { 'Content-Type': 'application/json' }
-        }
-      );
+      return new Response(JSON.stringify({ success: false, error: 'Error al actualizar favoritos.' }), { status: 500 });
     }
-    
+
   } catch (error) {
     console.error('Error en API de favoritos:', error);
-    
-    return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: 'Error interno del servidor' 
-      }),
-      { 
-        status: 500,
-        headers: { 'Content-Type': 'application/json' }
-      }
-    );
+    return new Response(JSON.stringify({ success: false, error: 'Error interno del servidor.' }), { status: 500 });
   }
 };
 
-// GET: Obtiene todos los favoritos
+// GET: Obtiene todos los Pokémon marcados como favoritos.
 export const GET: APIRoute = async () => {
   try {
-    const { getFavoritePokemon } = await import('../../services/pokemonDB');
     const favorites = await getFavoritePokemon();
-    
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        favorites,
-        count: favorites.length 
-      }),
-      { 
-        status: 200,
-        headers: { 'Content-Type': 'application/json' }
-      }
-    );
-    
+    return new Response(JSON.stringify({ success: true, favorites }), { status: 200 });
   } catch (error) {
     console.error('Error obteniendo favoritos:', error);
-    
-    return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: 'Error obteniendo favoritos' 
-      }),
-      { 
-        status: 500,
-        headers: { 'Content-Type': 'application/json' }
-      }
-    );
+    return new Response(JSON.stringify({ success: false, error: 'Error interno del servidor.' }), { status: 500 });
   }
 };

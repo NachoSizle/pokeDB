@@ -1,25 +1,32 @@
 ---
 // 📄 Página de detalle de Pokémon
-// Generada estáticamente con getStaticPaths para un rendimiento óptimo
+// Generada estáticamente con una isla de interactividad para los favoritos.
 
-export const prerender = true; // 🚀 ¡Importante para forzar el pre-renderizado!
+export const prerender = true;
 
-import { getAllPokemon } from '../../services/pokemonDB';
+import { getAllPokemon, isFavorite } from '../../services/pokemonDB';
 import MainLayout from '../../layouts/MainLayout.astro';
 import { Image } from 'astro:assets';
+import FavoriteButton from '../../components/FavoriteButton.jsx';
 
 // 🚀 Genera todas las páginas de Pokémon en el momento del build
 export async function getStaticPaths() {
   const allPokemon = await getAllPokemon();
   
-  return allPokemon.map((pokemon) => ({
-    params: { id: String(pokemon.id) },
-    props: { pokemon },
+  // Para cada Pokémon, determinamos si es un favorito
+  const paths = await Promise.all(allPokemon.map(async (pokemon) => {
+    const isFav = await isFavorite(pokemon.id);
+    return {
+      params: { id: String(pokemon.id) },
+      props: { pokemon, isInitiallyFavorite: isFav },
+    };
   }));
+
+  return paths;
 }
 
 // props se reciben desde getStaticPaths
-const { pokemon } = Astro.props;
+const { pokemon, isInitiallyFavorite } = Astro.props;
 
 const pageTitle = `${pokemon.name} - PokeDB`;
 const pageDescription = `Información detallada sobre ${pokemon.name}, incluyendo sus estadísticas, tipos y habilidades.`;
@@ -74,11 +81,17 @@ const getTypeColor = (type: string) => {
         <div class="absolute -top-10 -right-10 w-48 h-48 bg-white/20 rounded-full"></div>
         <div class="absolute -bottom-16 -left-10 w-40 h-40 bg-white/20 rounded-full"></div>
         
-        <div class="relative">
-          <h1 class="text-5xl font-bold capitalize tracking-wider mb-2" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
-            {pokemon.name}
-          </h1>
-          <p class="text-2xl font-semibold opacity-90">#{String(pokemon.id).padStart(3, '0')}</p>
+        <div class="relative flex justify-center items-center gap-4">
+          <div>
+            <h1 class="text-5xl font-bold capitalize tracking-wider mb-2" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
+              {pokemon.name}
+            </h1>
+            <p class="text-2xl font-semibold opacity-90">#{String(pokemon.id).padStart(3, '0')}</p>
+          </div>
+          <!-- ❤️ Botón de Favoritos (Isla Interactiva) -->
+          <div class="absolute top-4 right-4">
+            <FavoriteButton client:load pokemonId={pokemon.id} isInitiallyFavorite={isInitiallyFavorite} />
+          </div>
         </div>
       </div>
 

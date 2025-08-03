@@ -14,13 +14,15 @@
     "@astrojs/check": "^0.9.4",
     "@astrojs/db": "^0.16.0",
     "@astrojs/sitemap": "^3.4.2",
+    "@astrojs/solid-js": "^5.1.0",
     "@astrojs/vercel": "^8.2.5",
+    "@rollup/rollup-linux-x64-gnu": "4.9.5",
     "@tailwindcss/vite": "4.1.11",
     "astro": "^5.12.8",
     "astro-compressor": "^1.1.1",
     "astro-critters": "^2.2.1",
+    "solid-js": "^1.9.7",
     "tailwindcss": "^4.1.11",
-    "typescript": "^5.9.2",
-    "@rollup/rollup-linux-x64-gnu": "4.9.5"
+    "typescript": "^5.9.2"
   }
 }

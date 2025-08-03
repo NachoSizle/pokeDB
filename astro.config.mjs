@@ -6,6 +6,7 @@ import compressor from 'astro-compressor';
 import critters from 'astro-critters';
 import tailwindcss from '@tailwindcss/vite';
 import vercel from '@astrojs/vercel';
+import solid from '@astrojs/solid-js'; // SOLID
 
 import db from '@astrojs/db';
 
@@ -14,7 +15,7 @@ export default defineConfig({
   base: '/',
   output: 'server', // 🚀 Configuración SSR
   adapter: vercel(), // 🌐 Vercel adapter con zero-config
-  integrations: [sitemap(), compressor(), critters(), db()],
+  integrations: [sitemap(), compressor(), critters(), db(), solid()], // SOLID
   build: {
     inlineStylesheets: "always",
   },
