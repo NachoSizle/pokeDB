@@ -1,32 +1,40 @@
 import { createResource, For, Show } from 'solid-js';
 import PokemonCard from './PokemonCard.astro';
 
-const fetchFavorites = async () => {
+const fetchFavorites = async (apiBase) => {
+  // Si por alguna razón la prop apiBase no llega, evitamos un crash.
+  if (!apiBase) {
+    throw new Error('La URL base de la API no fue proporcionada al componente.');
+  }
+
   try {
-    // Usamos una URL relativa, que es más robusta.
-    const response = await fetch('/api/favorites');
+    const url = new URL('/api/favorites', apiBase).href;
+    const response = await fetch(url);
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.errorMessage || 'Error fetching favorites');
+      throw new Error(errorData.errorMessage || `El servidor respondió con un error: ${response.statusText}`);
     }
+
     const data = await response.json();
     return data.favorites || [];
   } catch (error) {
-    console.error("Error en fetchFavorites:", error);
-    throw error; // Propagamos el error para mostrarlo en la UI
+    console.error("Error detallado en fetchFavorites:", error);
+    // Propagamos el error para que Solid lo capture y lo muestre en la UI.
+    throw error;
   }
 };
 
-function FavoriteList() {
-  // El resource ya no depende de props, se ejecuta al cargar.
-  const [favorites] = createResource(fetchFavorites);
+function FavoriteList(props) {
+  const [favorites] = createResource(() => props.apiBase, fetchFavorites);
 
   return (
     <Show when={!favorites.loading} fallback={<p class="text-center text-white">Cargando tus Pokémon favoritos...</p>}>
+      {/* Bloque mejorado para mostrar errores de forma visible */}
       <Show when={!favorites.error} fallback={
-        <div class="text-center text-red-400 bg-red-900/50 p-6 rounded-lg">
-          <p><strong>Error al cargar favoritos:</strong></p>
-          <p>{favorites.error.message}</p>
+        <div class="text-center text-red-300 bg-red-900/50 p-6 rounded-lg max-w-lg mx-auto border border-red-700">
+          <h3 class="text-xl font-bold mb-2">Oops, algo salió mal</h3>
+          <p class="font-mono text-sm bg-red-900/70 p-2 rounded">{favorites.error.message}</p>
         </div>
       }>
         <Show when={favorites() && favorites().length > 0} 
@@ -38,7 +46,7 @@ function FavoriteList() {
                   No hay favoritos aún
                 </h3>
                 <p class="text-gray-600 dark:text-gray-300 mb-8">
-                  Explora la Pokédex y marca tus Pokémon favoritos haciendo clic en el corazón
+                  Explora la Pokédex y marca tus Pokémon favoritos haciendo clic en el corazón.
                 </p>
                 <a 
                   href="/"

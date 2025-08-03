@@ -41,7 +41,7 @@ const pageDescription = `Tus Pokémon favoritos en PokeDB. Gestiona tu colecció
   <!-- 💖 Lista de favoritos -->
   <section class="pb-20 px-4">
     <div class="max-w-7xl mx-auto">
-      <FavoriteList client:load />
+      <FavoriteList client:load apiBase={Astro.url.origin} />
     </div>
   </section>
 </MainLayout>
