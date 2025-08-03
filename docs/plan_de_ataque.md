@@ -6,7 +6,7 @@ Pokédex SSR con Astro 🪐, Astro DB (beta), Turso y Netlify Functions
 
 ⭐ Pilar fundamental: Rendimiento y persistencia full-stack
 	•	Astro DB (beta) + Turso (libSQL) para SQL gestionada con Drizzle ORM.
-	•	SSR (output:"server") en Netlify Functions → refresco TTL y endpoints de favoritos.
+	•	SSR (output:"server") en Netlify Functions → refresco TTL.
 	•	Caché TTL 24 h: evita golpear la PokéAPI en cada request.
 
 ⸻
@@ -43,13 +43,7 @@ export const Pokemon = defineTable({
   }
 });
 
-export const Favorite = defineTable({
-  columns: {
-    pokemonId: integer("pokemon_id").references(() => Pokemon.id)
-  }
-});
-
-export default defineDb({ tables: { Pokemon, Favorite } });
+export default defineDb({ tables: { Pokemon } });
 
 npx astro db push          # local
 npx astro db push --remote # Turso
@@ -87,8 +81,8 @@ export default {
 };
 
 	•	index.astro: consulta a Astro DB ➜ si updatedAt > 24 h, refetch sprite y UPDATE.
-	•	/favorites: INNER JOIN Pokémon ✕ Favorite.
-	•	/api/fav: endpoint POST para insertar favorito idempotente.
+	
+	
 
 ⸻
 
@@ -98,14 +92,14 @@ Componente	Archivo
 Layout base	src/layouts/MainLayout.astro
 Tarjeta Pokémon	src/components/PokemonCard.astro
 Lista + filtro	src/components/PokemonList.astro
-Vista favoritos	src/pages/favorites.astro
+
 
 
 ⸻
 
 Fase 5 – Interactividad
 	•	Filtro en cliente (client:load, vanilla JS).
-	•	Estado favorito: actualiza UI tras POST; opcional island SolidJS.
+	
 
 ⸻
 

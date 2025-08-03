@@ -9,8 +9,7 @@ Estas directrices están diseñadas para que los agentes de IA sean productivos 
 
 ## 🏗️ Arquitectura y Patrones Clave
 
-- **Astro + Islands**: El proyecto usa Astro como framework principal. Los componentes de UI se encuentran en `src/components/` y las páginas en `src/pages/`.
-- **Estilos**: Se utiliza Tailwind CSS y estilos locales en los componentes. Prioriza mantener los estilos junto al componente cuando sea posible.
+
 
 ## ⚙️ Flujos de Desarrollo
 

@@ -52,7 +52,7 @@ La clave de la arquitectura de PokeDB es el **modelo híbrido** de Astro, que no
 |-------------------|---------------------|-----------------------------------------------------------------------------------------|
 | `/`               | **SSG** (Estática)  | Página principal, contenido idéntico para todos. Se pre-renderiza para máxima velocidad y SEO. |
 | `/pokemon/[id]`   | **SSG** (Estática)  | Los detalles de los 151 Pokémon son fijos. Se generan 151 páginas HTML en el `build`.   |
-| `/favorites`      | **SSR** (Servidor)  | El contenido es dinámico y depende de las acciones del usuario (qué Pokémon ha marcado).  |
+
 | `/api/*`          | **SSR** (Servidor)  | Endpoints de API que necesitan ejecutarse en el servidor para interactuar con la DB.     |
 
 ---
@@ -61,26 +61,25 @@ La clave de la arquitectura de PokeDB es el **modelo híbrido** de Astro, que no
 
 Para añadir interactividad a nuestras páginas estáticas (SSG) sin sacrificar el rendimiento, utilizamos el concepto de **Islas de Astro** con SolidJS.
 
-### **Caso de Uso: Botón de Favoritos**
+### **Caso de Uso: Botón Dinámico**
 
-La página de detalles de un Pokémon (`/pokemon/[id]`) es estática, pero el botón para añadir a favoritos necesita ser dinámico. 
+La página de detalles de un Pokémon (`/pokemon/[id]`) es estática, pero algunos elementos necesitan ser dinámicos. 
 
-1.  **Componente Interactivo**: Se crea un componente en SolidJS (`FavoriteButton.jsx`) que maneja su propio estado y lógica.
+1.  **Componente Interactivo**: Se crea un componente en SolidJS (`DynamicButton.jsx`) que maneja su propio estado y lógica.
 2.  **Carga en el Cliente**: Se integra en la página `.astro` con una directiva `client:*`, que le dice a Astro que envíe el JavaScript de este componente al navegador.
 
 ```astro
 // src/pages/pokemon/[id].astro
 ---
-import FavoriteButton from '../../components/FavoriteButton.jsx';
-const { pokemon, isInitiallyFavorite } = Astro.props;
+import DynamicButton from '../../components/DynamicButton.jsx';
+const { pokemon } } = Astro.props;
 ---
 <!-- El resto de la página es HTML estático... -->
 
 <!-- ...excepto esta isla de SolidJS -->
-<FavoriteButton 
+<DynamicButton 
   client:load 
   pokemonId={pokemon.id} 
-  isInitiallyFavorite={isInitiallyFavorite} 
 />
 ```
 
