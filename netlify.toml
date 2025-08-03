@@ -1,14 +1,9 @@
 # 🚀 Configuración de Netlify para PokeDB
-# Configuración completa para SSR + Astro DB
+# Configuración simplificada para SSR + Astro DB
 
 [build]
-  command = "bun run build:netlify"
+  command = "bun run build"
   publish = "dist"
-
-# 🔧 Configuración de funciones con nombres válidos
-[functions]
-  directory = ".netlify/build"
-  included_files = ["**/*"]
 
 # 🎯 Headers para optimización
 [[headers]]
