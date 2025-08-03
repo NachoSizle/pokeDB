@@ -117,8 +117,9 @@ export async function getFavoritePokemon(): Promise<PokemonData[]> {
       isFavorite: true 
     }));
   } catch (error) {
-    console.error("❌ Error obteniendo favoritos:", error);
-    return [];
+    console.error("❌ Error DETALLADO obteniendo favoritos:", error);
+    // Lanzamos el error para que la API pueda capturarlo y mostrarlo
+    throw new Error(`Error de base de datos al obtener favoritos: ${error.message}`);
   }
 }
 

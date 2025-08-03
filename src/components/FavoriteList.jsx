@@ -1,47 +1,56 @@
-import { createResource, Show } from 'solid-js';
+import { createResource, For, Show } from 'solid-js';
+import PokemonCard from './PokemonCard.astro';
 
-// Función para obtener los datos de depuración de la API
-const fetchDebugInfo = async (apiBase) => {
+const fetchFavorites = async (apiBase) => {
   try {
     const url = new URL('/api/favorites', apiBase).href;
     const response = await fetch(url);
     if (!response.ok) {
-      return { error: `Error del servidor: ${response.statusText}` };
+      throw new Error('Error fetching favorites');
     }
-    return await response.json();
+    const data = await response.json();
+    // La API envuelve la respuesta en un objeto { success, favorites }
+    return data.favorites || [];
   } catch (error) {
     console.error(error);
-    return { error: 'Error de red al contactar la API de depuración.' };
+    return []; // Devuelve un array vacío en caso de error
   }
 };
 
-// Componente para mostrar la información de depuración
 function FavoriteList(props) {
-  const [debugInfo] = createResource(() => props.apiBase, fetchDebugInfo);
+  const [favorites] = createResource(() => props.apiBase, fetchFavorites);
 
   return (
-    <div class="max-w-2xl mx-auto bg-gray-800/50 backdrop-blur-sm border border-gray-700 p-8 rounded-2xl shadow-2xl text-white font-mono">
-      <h2 class="text-2xl font-bold mb-6 text-center bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
-        Resultados de Depuración del Runtime de Vercel
-      </h2>
-      
-      <Show when={!debugInfo.loading} fallback={<p>Cargando información de depuración desde la API...</p>}>
-        <Show when={!debugInfo().error} fallback={<p class="text-red-400">Error: {debugInfo().error}</p>}>
-          <pre class="bg-gray-900/70 p-6 rounded-lg overflow-x-auto">
-            <code>{JSON.stringify(debugInfo(), null, 2)}</code>
-          </pre>
-        </Show>
+    <Show when={!favorites.loading} fallback={<p>Cargando tus Pokémon favoritos...</p>}>
+      <Show when={favorites() && favorites().length > 0} 
+        fallback={
+          <div class="text-center py-0">
+            <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-3xl shadow-2xl p-12 max-w-md mx-auto">
+              <div class="text-6xl mb-6">💔</div>
+              <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-4">
+                No hay favoritos aún
+              </h3>
+              <p class="text-gray-600 dark:text-gray-300 mb-8">
+                Explora la Pokédex y marca tus Pokémon favoritos haciendo clic en el corazón
+              </p>
+              <a 
+                href="/"
+                class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-pink-500 to-red-500 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+              >
+                <span>🔍</span>
+                Explorar Pokédex
+              </a>
+            </div>
+          </div>
+        }
+      >
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <For each={favorites()}>
+            {(pokemon) => <PokemonCard pokemon={pokemon} />}
+          </For>
+        </div>
       </Show>
-
-      <div class="mt-8 p-4 bg-red-900/50 border border-red-700 rounded-lg text-sm">
-        <h3 class="font-bold text-red-300">Interpretación</h3>
-        <p class="text-red-400 mt-2">
-          Si `hasValue` es `false` o `length` es `0`, la variable de entorno `ASTRO_DB_APP_TOKEN`
-          NO está llegando a la función serverless de Vercel, a pesar de estar configurada en la UI.
-          Esto es un problema de configuración o de propagación en la plataforma de Vercel.
-        </p>
-      </div>
-    </div>
+    </Show>
   );
 }
 
