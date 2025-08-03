@@ -19,97 +19,53 @@ export interface PokemonData {
   isFavorite?: boolean;
 }
 
-// ⏰ Configuración de caché TTL
-const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 horas
-
 /**
- * 🔍 Verifica si el caché está expirado
- */
-function isCacheExpired(updatedAt: Date, ttlHours = 24): boolean {
-  const now = new Date();
-  const diffMs = now.getTime() - updatedAt.getTime();
-  const ttlMs = ttlHours * 60 * 60 * 1000;
-  return diffMs > ttlMs;
-}
-
-/**
- * 📊 Obtiene todos los Pokémon con caché TTL persistente
+ * 📊 Obtiene todos los Pokémon de forma segura para entornos serverless
  */
 export async function getAllPokemon(): Promise<PokemonData[]> {
   try {
-    console.log("🔍 Verificando caché en base de datos...");
-    
-    // �️ Verificar caché en base de datos
+    // 1. Intentar obtener los Pokémon de la base de datos
     const cachedPokemon = await db.select().from(Pokemon).all();
-    
-    // ✅ Si hay datos en caché y no están expirados, usarlos
+
+    // 2. Si la base de datos ya tiene datos, devolverlos directamente
+    // Esto evita condiciones de carrera en entornos serverless
     if (cachedPokemon.length > 0) {
-      const firstPokemon = cachedPokemon[0];
-      if (firstPokemon.updatedAt && !isCacheExpired(firstPokemon.updatedAt)) {
-        console.log(`✅ Usando caché de base de datos - ${cachedPokemon.length} Pokémon`);
-        return cachedPokemon.map((p, index) => ({
-          id: index + 1, // Mantener IDs secuenciales desde 1
-          name: p.name || '',
-          sprite: p.sprite || '',
-          updatedAt: p.updatedAt || new Date()
-        }));
-      }
+      console.log(`✅ Usando datos de la base de datos - ${cachedPokemon.length} Pokémon`);
+      return cachedPokemon.map((p, index) => ({
+        id: index + 1, // Asumir IDs secuenciales
+        name: p.name || '',
+        sprite: p.sprite || '',
+        updatedAt: p.updatedAt || new Date(),
+      }));
     }
-    
-    console.log("🔄 Caché expirado o vacío, obteniendo desde PokéAPI...");
-    
-    // 🌐 Obtener datos frescos desde PokéAPI
+
+    // 3. Si la base de datos está vacía, llenarla desde la PokéAPI
+    console.log("🔄 Base de datos vacía, obteniendo desde PokéAPI...");
+
     const pokemonList = await getPokemons(151, 0);
-    
-    // 🗂️ Transformar a formato interno
+
     const freshPokemon = pokemonList.results.slice(0, 151).map((pokemon: PokemonListItem, index: number) => ({
       id: index + 1,
       name: pokemon.name,
       sprite: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${index + 1}.png`,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     }));
-    
-    // 💾 Limpiar y recargar base de datos
-    console.log("💾 Actualizando caché en base de datos...");
-    
-    // Limpiar datos anteriores
-    await db.delete(Pokemon).execute();
-    
-    // Insertar en lotes para mejor rendimiento (sin ID manual)
-    const insertData = freshPokemon.map(pokemon => ({
-      name: pokemon.name,
-      sprite: pokemon.sprite,
-      updatedAt: pokemon.updatedAt
-    }));
-    
-    // Insertar todos los Pokémon
+
+    // 4. Insertar los nuevos datos en la base de datos
+    console.log("💾 Llenando la base de datos...");
+    const insertData = freshPokemon.map(p => ({ name: p.name, sprite: p.sprite, updatedAt: p.updatedAt }));
     await db.insert(Pokemon).values(insertData).execute();
-    
-    console.log(`📥 Caché actualizado en BD con ${freshPokemon.length} Pokémon`);
+
+    console.log(`📥 Base de datos llenada con ${freshPokemon.length} Pokémon`);
     return freshPokemon;
-    
+
   } catch (error) {
     console.error("❌ Error obteniendo Pokémon:", error);
-    
-    // 🚨 Fallback: intentar devolver caché expirado si existe
-    try {
-      const fallbackPokemon = await db.select().from(Pokemon).all();
-      if (fallbackPokemon.length > 0) {
-        console.log("⚠️ Usando caché expirado como fallback");
-        return fallbackPokemon.map((p, index) => ({
-          id: index + 1,
-          name: p.name || '',
-          sprite: p.sprite || '',
-          updatedAt: p.updatedAt || new Date()
-        }));
-      }
-    } catch (fallbackError) {
-      console.error("❌ Error en fallback:", fallbackError);
-    }
-    
+    // En caso de error, es mejor lanzar una excepción para que el problema sea visible
     throw new Error("No se pudo obtener la lista de Pokémon");
   }
 }
+
 
 /**
  * 🔍 Obtiene un Pokémon específico por ID
