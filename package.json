@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "astro dev --remote",
     "dev:local": "astro dev",
-    "build": "dotenv -- astro build --remote",
+    "build": "astro build --remote",
+    "build:local": "astro build",
     "preview": "astro preview",
     "astro": "astro"
   },
@@ -24,11 +25,5 @@
     "solid-js": "^1.9.7",
     "tailwindcss": "^4.1.11",
     "typescript": "^5.9.2"
-  },
-  "optionalDependencies": {
-    "@rollup/rollup-linux-x64-gnu": "4.9.5",
-    "@rollup/rollup-linux-x64-musl": "4.9.5",
-    "@rollup/rollup-darwin-x64": "4.9.5",
-    "@rollup/rollup-win32-x64-msvc": "4.9.5"
   }
 }

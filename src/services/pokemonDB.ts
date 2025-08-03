@@ -77,40 +77,12 @@ export async function getPokemonById(id: number): Promise<PokemonData | null> {
 }
 
 /**
- * ⭐ Obtiene todos los Pokémon favoritos (MODO DEPURACIÓN: CONSULTA CANARIO)
+ * ⭐ Obtiene todos los Pokémon favoritos (SOLUCIÓN TEMPORAL: DEVUELVE ARRAY VACÍO)
  */
 export async function getFavoritePokemon(): Promise<PokemonData[]> {
-  try {
-    console.log("--- INICIO CONSULTA CANARIO ---");
-    console.log("Ignorando la tabla 'Favorite', vamos a buscar a Pikachu (ID 25) en la tabla 'Pokemon'.");
-
-    // Hacemos una consulta que sabemos que DEBE funcionar.
-    const pikachu = await db.select().from(PokemonTable).where(eq(PokemonTable.id, 25)).get();
-
-    if (!pikachu) {
-      console.log("Canario falló: No se pudo encontrar a Pikachu.");
-      throw new Error('La consulta canario falló, no se pudo obtener un Pokémon de la tabla Pokemon.');
-    }
-
-    console.log("¡Canario vivo! Se encontró a Pikachu exitosamente.");
-    console.log("--- FIN CONSULTA CANARIO ---");
-
-    // Devolvemos a Pikachu dentro de un array, como si fuera el único favorito.
-    return [{
-      ...pikachu,
-      id: pikachu.id,
-      name: pikachu.name || '',
-      sprite: pikachu.sprite || '',
-      types: pikachu.types ? (pikachu.types as string[]) : [],
-      stats: pikachu.stats ? (pikachu.stats as Record<string, number>) : {},
-      updatedAt: pikachu.updatedAt || new Date(),
-      isFavorite: true
-    }];
-
-  } catch (error) {
-    console.error("❌ Error DETALLADO en la consulta canario:", error);
-    throw new Error(`Error en la consulta canario: ${error.message}`);
-  }
+  console.log("ADVERTENCIA: getFavoritePokemon está devolviendo un array vacío temporalmente.");
+  console.log("Por favor, revisa los logs de Vercel para el error real de la base de datos.");
+  return [];
 }
 
 /**
@@ -136,7 +108,7 @@ export async function removeFromFavorites(pokemonId: number): Promise<boolean> {
   try {
     await db.delete(FavoriteTable).where(eq(FavoriteTable.pokemonId, pokemonId)).execute();
     return true;
-  } catch (error) {
+  }  catch (error) {
     console.error(`❌ Error removiendo de favoritos:`, error);
     return false;
   }
