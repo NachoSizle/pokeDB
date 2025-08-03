@@ -94,32 +94,21 @@ export async function getPokemonById(id: number): Promise<PokemonData | null> {
 }
 
 /**
- * ⭐ Obtiene todos los Pokémon favoritos
+ * ⭐ Obtiene todos los Pokémon favoritos (MODO DEPURACIÓN: SOLO LEE LA TABLA FAVORITE)
  */
-export async function getFavoritePokemon(): Promise<PokemonData[]> {
+export async function getFavoritePokemon(): Promise<any[]> { // Tipo de retorno cambiado a any[] para depuración
   try {
-    const favoriteJoin = await db
-      .select({
-        id: PokemonTable.id,
-        name: PokemonTable.name,
-        sprite: PokemonTable.sprite,
-        types: PokemonTable.types,
-        stats: PokemonTable.stats,
-        updatedAt: PokemonTable.updatedAt,
-      })
-      .from(FavoriteTable)
-      .innerJoin(PokemonTable, eq(FavoriteTable.pokemonId, PokemonTable.id));
+    console.log("Ejecutando consulta de depuración: SELECT * FROM FavoriteTable");
+    // Hacemos la consulta más simple posible para ver si la tabla Favorite es accesible.
+    const favoriteIds = await db.select().from(FavoriteTable).all();
+    console.log(`Consulta de depuración exitosa, se encontraron ${favoriteIds.length} favoritos.`);
+    
+    // Devolvemos los datos crudos. El frontend no los mostrará, pero evitaremos el error 500.
+    return favoriteIds;
 
-    return favoriteJoin.map(p => ({ 
-      ...p, 
-      types: p.types as string[],
-      stats: p.stats as Record<string, number>,
-      isFavorite: true 
-    }));
   } catch (error) {
-    console.error("❌ Error DETALLADO obteniendo favoritos:", error);
-    // Lanzamos el error para que la API pueda capturarlo y mostrarlo
-    throw new Error(`Error de base de datos al obtener favoritos: ${error.message}`);
+    console.error("❌ Error DETALLADO en la consulta de depuración:", error);
+    throw new Error(`Error de base de datos al consultar la tabla Favorite: ${error.message}`);
   }
 }
 
