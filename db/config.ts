@@ -9,6 +9,8 @@ export const Pokemon = defineTable({
     id: column.number({ primaryKey: true, autoIncrement: false }),
     name: column.text(),
     sprite: column.text(),
+    types: column.json(), // 🎨 Almacena un array de strings
+    stats: column.json(), // 📊 Almacena un objeto con las estadísticas
     updatedAt: column.date()
   }
 });

@@ -1,108 +1,112 @@
-// 🗄️ Servicio de Pokémon con Astro DB + Turso - Caché TTL persistente
-// Arquitectura completa con base de datos real
+// 🗄️ Servicio de Pokémon con Astro DB + Turso - Arquitectura Robusta
 
 import { db, eq } from 'astro:db';
 import { asDrizzleTable } from '@astrojs/db/utils';
 import { Pokemon as PokemonConfig, Favorite as FavoriteConfig } from '../../db/config';
+import { getPokemons, getPokemonDetails, type PokemonDetails } from './pokemon';
 
 // 🔄 Crear referencias type-safe a las tablas
-const Pokemon = asDrizzleTable('Pokemon', PokemonConfig);
-const Favorite = asDrizzleTable('Favorite', FavoriteConfig);
-import { getPokemons, type PokemonListItem } from './pokemon';
+const PokemonTable = asDrizzleTable('Pokemon', PokemonConfig);
+const FavoriteTable = asDrizzleTable('Favorite', FavoriteConfig);
 
 // 🎯 Tipos de datos optimizados
 export interface PokemonData {
   id: number;
   name: string;
   sprite: string;
+  types: string[];
+  stats: Record<string, number>;
   updatedAt: Date;
   isFavorite?: boolean;
 }
 
 /**
- * 📊 Obtiene todos los Pokémon de forma segura para entornos serverless
+ * 📊 Obtiene todos los Pokémon, llenando la base de datos si es necesario.
+ * Esta función es la piedra angular del proyecto. Se ejecuta durante el `build`
+ * para asegurar que todos los datos estén disponibles de forma estática.
  */
 export async function getAllPokemon(): Promise<PokemonData[]> {
   try {
     // 1. Intentar obtener los Pokémon de la base de datos
-    const cachedPokemon = await db.select().from(Pokemon).all();
+    const cachedPokemon = await db.select().from(PokemonTable).all();
 
     // 2. Si la base de datos ya tiene datos, devolverlos directamente
-    // Esto evita condiciones de carrera en entornos serverless
     if (cachedPokemon.length > 0) {
       console.log(`✅ Usando datos de la base de datos - ${cachedPokemon.length} Pokémon`);
-      return cachedPokemon.map((p, index) => ({
-        id: index + 1, // Asumir IDs secuenciales
+      return cachedPokemon.map(p => ({
+        id: p.id,
         name: p.name || '',
         sprite: p.sprite || '',
+        types: p.types ? (p.types as string[]) : [],
+        stats: p.stats ? (p.stats as Record<string, number>) : {},
         updatedAt: p.updatedAt || new Date(),
       }));
     }
 
     // 3. Si la base de datos está vacía, llenarla desde la PokéAPI
-    console.log("🔄 Base de datos vacía, obteniendo desde PokéAPI...");
+    console.log("🔄 Base de datos vacía, obteniendo datos frescos desde PokéAPI...");
 
+    // Obtener la lista básica de los 151 Pokémon
     const pokemonList = await getPokemons(151, 0);
+    
+    // Obtener los detalles completos para cada uno en paralelo
+    console.log("📥 Obteniendo detalles de 151 Pokémon...");
+    const pokemonDetailsPromises = pokemonList.results.map(p => getPokemonDetails(p.id));
+    const pokemonDetailsResults = await Promise.all(pokemonDetailsPromises);
 
-    const freshPokemon = pokemonList.results.slice(0, 151).map((pokemon: PokemonListItem, index: number) => ({
-      id: index + 1,
-      name: pokemon.name,
-      sprite: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${index + 1}.png`,
+    // Transformar los datos para la base de datos
+    const freshPokemonData = pokemonDetailsResults.map((details: PokemonDetails) => ({
+      id: details.id,
+      name: details.name,
+      sprite: details.sprites.other['official-artwork'].front_default || details.sprites.front_default,
+      types: details.types.map(t => t.type.name),
+      stats: details.stats.reduce((acc, s) => {
+        acc[s.stat.name] = s.base_stat;
+        return acc;
+      }, {} as Record<string, number>),
       updatedAt: new Date(),
     }));
 
     // 4. Insertar los nuevos datos en la base de datos
-    console.log("💾 Llenando la base de datos...");
-    const insertData = freshPokemon.map(p => ({ name: p.name, sprite: p.sprite, updatedAt: p.updatedAt }));
-    await db.insert(Pokemon).values(insertData).execute();
+    console.log("💾 Llenando la base de datos con datos enriquecidos...");
+    await db.insert(PokemonTable).values(freshPokemonData).execute();
 
-    console.log(`📥 Base de datos llenada con ${freshPokemon.length} Pokémon`);
-    return freshPokemon;
+    console.log(`🎉 Base de datos llenada con ${freshPokemonData.length} Pokémon`);
+    return freshPokemonData;
 
   } catch (error) {
-    console.error("❌ Error obteniendo Pokémon:", error);
-    // En caso de error, es mejor lanzar una excepción para que el problema sea visible
-    throw new Error("No se pudo obtener la lista de Pokémon");
+    console.error("❌ Error crítico obteniendo Pokémon:", error);
+    throw new Error("No se pudo obtener la lista de Pokémon. Revisa los logs del servidor.");
   }
 }
 
-
 /**
- * 🔍 Obtiene un Pokémon específico por ID
+ * 🔍 Obtiene un Pokémon específico por ID desde la caché local
  */
 export async function getPokemonById(id: number): Promise<PokemonData | null> {
   try {
     const allPokemon = await getAllPokemon();
     return allPokemon.find(p => p.id === id) || null;
-    
   } catch (error) {
     console.error(`❌ Error obteniendo Pokémon ${id}:`, error);
     return null;
   }
 }
 
-
 /**
  * ⭐ Obtiene todos los Pokémon favoritos
  */
 export async function getFavoritePokemon(): Promise<PokemonData[]> {
   try {
-    // 🗄️ Obtener IDs de favoritos desde base de datos
-    const favoriteIds = await db.select().from(Favorite).all();
-    
-    if (favoriteIds.length === 0) {
-      return [];
-    }
-    
-    // 📋 Obtener todos los Pokémon
+    const favoriteIdsResult = await db.select().from(FavoriteTable).all();
+    if (favoriteIdsResult.length === 0) return [];
+
     const allPokemon = await getAllPokemon();
+    const favoriteIdSet = new Set(favoriteIdsResult.map(f => f.pokemonId));
     
-    // 🔍 Filtrar solo los favoritos
-    const favoriteIdSet = new Set(favoriteIds.map(f => f.pokemonId));
     return allPokemon
       .filter(pokemon => favoriteIdSet.has(pokemon.id))
       .map(pokemon => ({ ...pokemon, isFavorite: true }));
-    
   } catch (error) {
     console.error("❌ Error obteniendo favoritos:", error);
     return [];
@@ -114,19 +118,12 @@ export async function getFavoritePokemon(): Promise<PokemonData[]> {
  */
 export async function addToFavorites(pokemonId: number): Promise<boolean> {
   try {
-    // 🔍 Verificar si ya existe para evitar duplicados
-    const existing = await db.select().from(Favorite).where(eq(Favorite.pokemonId, pokemonId)).all();
-    
+    const existing = await db.select().from(FavoriteTable).where(eq(FavoriteTable.pokemonId, pokemonId)).all();
     if (existing.length === 0) {
-      // 💾 Insertar en base de datos
-      await db.insert(Favorite).values({ pokemonId }).execute();
+      await db.insert(FavoriteTable).values({ pokemonId }).execute();
       console.log(`💖 Pokémon ${pokemonId} añadido a favoritos`);
-    } else {
-      console.log(`ℹ️ Pokémon ${pokemonId} ya está en favoritos`);
     }
-    
     return true;
-    
   } catch (error) {
     console.error(`❌ Error añadiendo a favoritos:`, error);
     return false;
@@ -138,11 +135,9 @@ export async function addToFavorites(pokemonId: number): Promise<boolean> {
  */
 export async function removeFromFavorites(pokemonId: number): Promise<boolean> {
   try {
-    // 🗑️ Eliminar de base de datos
-    await db.delete(Favorite).where(eq(Favorite.pokemonId, pokemonId)).execute();
+    await db.delete(FavoriteTable).where(eq(FavoriteTable.pokemonId, pokemonId)).execute();
     console.log(`💔 Pokémon ${pokemonId} removido de favoritos`);
     return true;
-    
   } catch (error) {
     console.error(`❌ Error removiendo de favoritos:`, error);
     return false;
@@ -154,45 +149,10 @@ export async function removeFromFavorites(pokemonId: number): Promise<boolean> {
  */
 export async function isFavorite(pokemonId: number): Promise<boolean> {
   try {
-    const result = await db.select().from(Favorite).where(eq(Favorite.pokemonId, pokemonId)).all();
+    const result = await db.select().from(FavoriteTable).where(eq(FavoriteTable.pokemonId, pokemonId)).all();
     return result.length > 0;
   } catch (error) {
     console.error(`❌ Error verificando favorito:`, error);
     return false;
   }
-}
-
-/**
- * 🎨 Utilidad: Obtiene el color asociado a un tipo de Pokémon
- */
-export function getTypeColor(typeName: string): string {
-  const typeColors: Record<string, string> = {
-    fire: 'from-red-500 to-orange-500',
-    water: 'from-blue-500 to-cyan-500',
-    grass: 'from-green-500 to-emerald-500',
-    electric: 'from-yellow-400 to-yellow-500',
-    psychic: 'from-pink-500 to-purple-500',
-    ice: 'from-cyan-400 to-blue-400',
-    dragon: 'from-purple-600 to-indigo-600',
-    dark: 'from-gray-800 to-gray-900',
-    fighting: 'from-red-600 to-orange-600',
-    poison: 'from-purple-500 to-pink-500',
-    ground: 'from-yellow-600 to-orange-600',
-    flying: 'from-blue-400 to-purple-400',
-    bug: 'from-green-400 to-lime-500',
-    rock: 'from-yellow-600 to-gray-600',
-    ghost: 'from-purple-600 to-gray-600',
-    steel: 'from-gray-400 to-gray-600',
-    fairy: 'from-pink-400 to-purple-400',
-    normal: 'from-gray-400 to-gray-500'
-  };
-  
-  return typeColors[typeName] || 'from-gray-400 to-gray-500';
-}
-
-/**
- * 🔤 Utilidad: Capitaliza la primera letra
- */
-export function capitalize(str: string): string {
-  return str.charAt(0).toUpperCase() + str.slice(1);
 }

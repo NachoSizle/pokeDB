@@ -1,18 +1,15 @@
 # 🏗️ Arquitectura Técnica - PokeDB
 
-**Documentación técnica completa del proyecto PokeDB con Astro v5 + SSR híbrido**
+**Documentación técnica completa del proyecto PokeDB con Astro, siguiendo una arquitectura híbrida optimizada para rendimiento y escalabilidad.**
 
 ---
 
 ## 📋 **Índice**
 
 1. [🎯 Arquitectura General](#-arquitectura-general)
-2. [🚀 SSR Híbrido](#-ssr-híbrido)
-3. [🗄️ Base de Datos](#️-base-de-datos)
-4. [⚡ Sistema de Caché](#-sistema-de-caché)
-5. [🌐 Deploy y CI/CD](#-deploy-y-cicd)
-6. [🔧 Configuración](#-configuración)
-7. [📊 Métricas de Rendimiento](#-métricas-de-rendimiento)
+2. [🚀 Modelo Híbrido (SSG/SSR)](#-modelo-híbrido-ssgssr)
+3. [🗄️ Base de Datos y Flujo de Datos](#️-base-de-datos-y-flujo-de-datos)
+4. [🌐 Deploy y CI/CD con Vercel](#-deploy-y-cicd-con-vercel)
 
 ---
 
@@ -23,16 +20,16 @@
 ```
 ┌─────────────────────────────────────────────────────┐
 │                 FRONTEND                            │
-│  Astro v5.12.8 + TypeScript + Tailwind CSS v4     │
+│  Astro v5+ + TypeScript + Tailwind CSS v4           │
 └─────────────────────────────────────────────────────┘
                             │
 ┌─────────────────────────────────────────────────────┐
 │                 ROUTING                             │
-│  SSR Híbrido: Estático (/) + Dinámico (/pokemon)   │
+│  Modelo Híbrido: SSG (páginas estáticas) + SSR      │
 └─────────────────────────────────────────────────────┘
                             │
 ┌─────────────────────────────────────────────────────┐
-│                 BACKEND                             │
+│                 BACKEND & BUILD                     │
 │  Vercel Functions + Astro DB + PokéAPI             │
 └─────────────────────────────────────────────────────┘
                             │
@@ -42,390 +39,119 @@
 └─────────────────────────────────────────────────────┘
 ```
 
-### **Flujo de Datos**
-
-```mermaid
-sequenceDiagram
-    participant U as Usuario
-    participant V as Vercel
-    participant A as Astro SSR
-    participant DB as Turso DB
-    participant API as PokéAPI
-    
-    Note over U,API: Homepage Estática
-    U->>N: GET /
-    N->>U: index.html (pre-renderizado)
-    
-    Note over U,API: Página Dinámica
-    U->>N: GET /pokemon/25
-    N->>A: Netlify Function
-    A->>DB: Check cache TTL
-    alt Cache válido
-        DB->>A: Pokemon data
-    else Cache expirado
-        A->>API: Fetch pokemon
-        API->>A: Pokemon data
-        A->>DB: Update cache
-    end
-    A->>U: HTML renderizado
-```
-
 ---
 
-## 🚀 **SSR Híbrido**
+## 🚀 **Modelo Híbrido (SSG/SSR)**
 
-### **Configuración**
+La clave de la arquitectura de PokeDB es el **modelo híbrido** de Astro, que nos permite decidir el modo de renderizado por página para un rendimiento óptimo.
+
+### **Configuración Principal (`astro.config.mjs`)**
+
+Se establece `output: 'server'` para habilitar el renderizado en el servidor, lo que nos da la flexibilidad de elegir qué páginas son dinámicas y cuáles estáticas.
 
 ```javascript
 // astro.config.mjs
 export default defineConfig({
-  output: 'server', // SSR por defecto
-  adapter: netlify(), // Netlify Functions
-  // ...
+  output: 'server', // Habilita el modo híbrido
+  adapter: vercel(), // Adaptador para despliegue en Vercel
 });
 ```
 
-### **Páginas Estáticas**
+### **Estrategia de Renderizado por Ruta**
 
-```javascript
-// src/pages/index.astro
----
-export const prerender = true; // ✨ Pre-renderizar
-// ...
----
-```
+| Ruta              | Modo de Renderizado | Razón de la Elección                                                                    |
+|-------------------|---------------------|-----------------------------------------------------------------------------------------|
+| `/`               | **SSG** (Estática)  | Página principal, contenido idéntico para todos. Se pre-renderiza para máxima velocidad y SEO. |
+| `/pokemon/[id]`   | **SSG** (Estática)  | Los detalles de los 151 Pokémon son fijos. Se generan 151 páginas HTML en el `build`.   |
+| `/favorites`      | **SSR** (Servidor)  | El contenido es dinámico y depende de las acciones del usuario (qué Pokémon ha marcado).  |
+| `/api/*`          | **SSR** (Servidor)  | Endpoints de API que necesitan ejecutarse en el servidor para interactuar con la DB.     |
 
-### **Routing Strategy**
-
-| Ruta | Tipo | Razón | Rendimiento |
-|------|------|-------|-------------|
-| `/` | Estática | SEO + Velocidad | ~100ms |
-| `/pokemon/[id]` | SSR | Datos dinámicos | ~300ms |
-| `/favorites` | SSR | Estado del usuario | ~400ms |
-| `/api/*` | SSR | Funcionalidad backend | ~200ms |
+Para forzar que una página se genere de forma estática (SSG) en modo `server`, se utiliza `export const prerender = true;` en el script de la página.
 
 ---
 
-## 🗄️ **Base de Datos**
+## 🗄️ **Base de Datos y Flujo de Datos**
 
-### **Schema (Drizzle ORM)**
+### **Schema de la Base de Datos (`db/config.ts`)**
+
+El esquema se ha diseñado para almacenar toda la información necesaria de los Pokémon, evitando llamadas futuras a la API externa.
 
 ```typescript
 // db/config.ts
 import { defineDb, defineTable, column } from 'astro:db';
 
-const Pokemon = defineTable({
+export const Pokemon = defineTable({
   columns: {
     id: column.number({ primaryKey: true }),
-    name: column.text({ notNull: true }),
-    height: column.number(),
-    weight: column.number(),
-    sprites: column.json(), // { front_default: string }
-    types: column.json(),   // Array<string>
-    updatedAt: column.date({ default: new Date() }),
+    name: column.text(),
+    sprite: column.text(),
+    types: column.json(), // Almacena un array de strings, ej: ['grass', 'poison']
+    stats: column.json(), // Almacena un objeto, ej: { "hp": 45, "attack": 49, ... }
+    updatedAt: column.date(),
   }
 });
 
-const Favorite = defineTable({
+export const Favorite = defineTable({
   columns: {
-    id: column.number({ primaryKey: true }),
-    pokemonId: column.number({ references: () => Pokemon.columns.id }),
-    userId: column.text({ default: 'default' }), // Para futuro multi-user
-    createdAt: column.date({ default: new Date() }),
+    pokemonId: column.number({ references: () => Pokemon.columns.id })
   }
 });
 ```
 
-### **Conexión Turso**
+### **Flujo de Datos en el `Build` (Proceso de Llenado)**
+
+El problema de los errores 500 en Vercel se solucionó moviendo toda la carga de datos al proceso de `build`. Esto evita llamadas a la PokéAPI en tiempo de ejecución.
+
+```mermaid
+sequenceDiagram
+    participant Build as Proceso de Build (Vercel)
+    participant DB as Astro DB (Turso)
+    participant API as PokéAPI
+
+    Build->>DB: ¿Hay datos de Pokémon?
+    alt Base de Datos Vacía
+        DB-->>Build: No, estoy vacía.
+        Build->>API: GET /pokemon?limit=151
+        API-->>Build: Lista de 151 Pokémon
+        
+        Note right of Build: Pide detalles para cada Pokémon
+        Build->>API: GET /pokemon/1 (details)
+        Build->>API: GET /pokemon/2 (details)
+        ... 
+        API-->>Build: Detalles completos
+        
+        Build->>DB: INSERT 151 Pokémon con datos enriquecidos
+        DB-->>Build: ¡Datos guardados!
+    else Base de Datos con Datos
+        DB-->>Build: Sí, aquí tienes los 151 Pokémon.
+    end
+
+    Note over Build,DB: Ahora, con los datos asegurados, se generan las páginas estáticas.
+    Build->>Build: Genera /index.html
+    Build->>Build: Genera /pokemon/1.html, /pokemon/2.html, ...
+```
+
+Este enfoque garantiza que la aplicación desplegada es extremadamente rápida y resiliente, ya que no depende de la disponibilidad de la PokéAPI para servir las páginas principales.
+
+---
+
+## 🌐 **Deploy y CI/CD con Vercel**
+
+### **Configuración de Vercel**
+
+El proyecto está configurado para un despliegue "zero-config" en Vercel gracias al `@astrojs/vercel` adapter. Vercel detecta automáticamente la configuración híbrida y despliega:
+
+-   Las páginas SSG como assets estáticos en su CDN global.
+-   Las páginas SSR (como `/favorites`) como Vercel Functions serverless.
+
+### **Proceso de Sincronización de la Base de Datos**
+
+Cuando se realizan cambios en el esquema de la base de datos (`db/config.ts`), es necesario sincronizarlo con la base de datos remota de Astro DB. Esto se hace con el siguiente comando:
 
 ```bash
-# Configuración
-turso db create pokedb-astro
-turso db tokens create pokedb-astro --read-write
-
-# Variables de entorno
-ASTRO_DB_REMOTE_URL=libsql://pokedb-astro-{org}.turso.io
-ASTRO_DB_APP_TOKEN=eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9...
+# Empuja los cambios del esquema. El flag --force-reset borra la DB y la recrea.
+# ¡Usar con cuidado! Es seguro en este proyecto porque los datos se pueden regenerar.
+bunx astro db push --force-reset
 ```
 
----
-
-## ⚡ **Sistema de Caché**
-
-### **TTL Cache Logic**
-
-```typescript
-// src/services/pokemonDB.ts
-const CACHE_TTL_HOURS = 24;
-
-export async function getPokemonById(id: number): Promise<PokemonData> {
-  // 1. Check database cache
-  const cached = await db
-    .select()
-    .from(Pokemon)
-    .where(eq(Pokemon.id, id))
-    .get();
-
-  // 2. Validate TTL
-  if (cached && !isCacheExpired(cached.updatedAt, CACHE_TTL_HOURS)) {
-    return cached;
-  }
-
-  // 3. Fetch from PokéAPI
-  const fresh = await fetchPokemonFromAPI(id);
-  
-  // 4. Update cache
-  await db
-    .insert(Pokemon)
-    .values(fresh)
-    .onConflictDoUpdate({
-      target: Pokemon.id,
-      set: { ...fresh, updatedAt: new Date() }
-    });
-
-  return fresh;
-}
-```
-
-### **Cache Performance**
-
-- **Hit Rate**: ~85% después de 24h de uso
-- **Miss Penalty**: +200ms (PokéAPI fetch)
-- **Database Query**: ~50ms promedio
-- **Memory Usage**: Mínimo (stateless functions)
-
----
-
-## 🌐 **Deploy y CI/CD**
-
-### **Netlify Configuration**
-
-```toml
-# netlify.toml
-[build]
-  command = "npm run build"
-  publish = "dist"
-
-[build.environment]
-  NODE_VERSION = "18"
-
-# SSR Redirects
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/entry"
-  status = 200
-
-[[redirects]]
-  from = "/pokemon/*"
-  to = "/.netlify/functions/entry"
-  status = 200
-
-[[redirects]]
-  from = "/favorites"
-  to = "/.netlify/functions/entry"
-  status = 200
-
-[[redirects]]
-  from = "/*"
-  to = "/.netlify/functions/entry"
-  status = 200
-```
-
-### **Build Process**
-
-```bash
-# Build steps
-1. npm run build --remote    # Astro build con DB remota
-2. [@astrojs/netlify] Generated SSR Function
-3. Assets compression (gzip + brotli)
-4. _redirects generation
-5. Functions deployment
-```
-
-### **Environment Variables**
-
-| Variable | Descripción | Requerido |
-|----------|-------------|-----------|
-| `ASTRO_DB_REMOTE_URL` | URL de conexión a Turso | ✅ |
-| `ASTRO_DB_APP_TOKEN` | Token JWT de autenticación | ✅ |
-| `POKEAPI_BASE_URL` | Base URL de PokéAPI | ❌ |
-
----
-
-## 🔧 **Configuración**
-
-### **TypeScript Config**
-
-```json
-// tsconfig.json
-{
-  "extends": "astro/tsconfigs/strict",
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["src/*"],
-      "@/components/*": ["src/components/*"],
-      "@/services/*": ["src/services/*"]
-    }
-  }
-}
-```
-
-### **Tailwind Config**
-
-```javascript
-// tailwind.config.mjs
-export default {
-  content: ['./src/**/*.{astro,html,js,jsx,md,mdx,svelte,ts,tsx,vue}'],
-  darkMode: 'class',
-  theme: {
-    extend: {
-      colors: {
-        pokemon: {
-          electric: '#F7D02C',
-          fire: '#EE8130',
-          water: '#6390F0',
-          grass: '#7AC74C',
-          // ...
-        }
-      }
-    }
-  }
-}
-```
-
----
-
-## 📊 **Métricas de Rendimiento**
-
-### **Core Web Vitals**
-
-| Métrica | Homepage | Pokemon Page | Target |
-|---------|----------|--------------|--------|
-| **LCP** | 1.2s | 1.8s | < 2.5s ✅ |
-| **FID** | 100ms | 150ms | < 100ms ⚠️ |
-| **CLS** | 0.05 | 0.08 | < 0.1 ✅ |
-
-### **Lighthouse Scores**
-
-```
-Homepage (Estática):
-┌─────────────────┬───────┐
-│ Performance     │  95   │
-│ Accessibility   │  98   │
-│ Best Practices  │  92   │
-│ SEO            │  100  │
-└─────────────────┴───────┘
-
-Pokemon Page (SSR):
-┌─────────────────┬───────┐
-│ Performance     │  88   │
-│ Accessibility   │  98   │
-│ Best Practices  │  92   │
-│ SEO            │  95   │
-└─────────────────┴───────┘
-```
-
-### **Bundle Analysis**
-
-```
-dist/
-├── index.html                    # 45KB (gzipped: 12KB)
-├── _astro/
-│   ├── entry.{hash}.js          # 89KB (gzipped: 28KB)
-│   └── pokemon.{hash}.css       # 15KB (gzipped: 4KB)
-└── .netlify/
-    └── functions/
-        └── entry.mjs            # 245KB (bundled)
-```
-
----
-
-## 🔍 **Debugging y Monitoring**
-
-### **Logging Strategy**
-
-```typescript
-// src/services/pokemonDB.ts
-const logger = {
-  info: (msg: string, data?: any) => {
-    console.log(`[INFO] ${msg}`, data);
-  },
-  error: (msg: string, error?: Error) => {
-    console.error(`[ERROR] ${msg}`, error);
-  }
-};
-
-// Usage
-logger.info('🔄 Obteniendo Pokémon desde PokéAPI...', { pokemonId });
-logger.info('📥 Caché actualizado', { count: pokemon.length });
-```
-
-### **Error Handling**
-
-```typescript
-export async function getAllPokemon(): Promise<PokemonData[]> {
-  try {
-    // Try database first
-    const cached = await db.select().from(Pokemon).all();
-    
-    if (cached.length > 0) {
-      return cached;
-    }
-    
-    // Fallback to API
-    return await fetchAllFromPokéAPI();
-    
-  } catch (error) {
-    logger.error('Failed to get Pokemon', error);
-    
-    // Graceful degradation
-    return [];
-  }
-}
-```
-
----
-
-## 🚀 **Optimizaciones Futuras**
-
-### **Performance**
-
-- [ ] **Image Optimization** - Astro Image + WebP
-- [ ] **Service Workers** - Offline-first caching
-- [ ] **Edge Functions** - Reduce cold start times
-- [ ] **Database Pooling** - Connection optimization
-
-### **Features**
-
-- [ ] **Search & Filters** - ElasticSearch integration
-- [ ] **User Authentication** - Multi-user favorites
-- [ ] **Real-time Updates** - WebSocket notifications
-- [ ] **Analytics** - Usage tracking + metrics
-
-### **Scaling**
-
-- [ ] **CDN Optimization** - Regional edge caching
-- [ ] **Database Sharding** - Multi-region Turso
-- [ ] **Load Balancing** - Multiple Netlify regions
-- [ ] **Monitoring** - Sentry + DataDog integration
-
----
-
-## 📚 **Referencias Técnicas**
-
-- [Astro SSR Guide](https://docs.astro.build/en/guides/server-side-rendering/)
-- [Turso Platform Docs](https://docs.turso.tech/features)
-- [Netlify Functions](https://docs.netlify.com/functions/overview/)
-- [Drizzle ORM Docs](https://orm.drizzle.team/docs/overview)
-- [PokéAPI Reference](https://pokeapi.co/docs/v2)
-
----
-
-<div align="center">
-
-**🔧 Documentación técnica actualizada - Enero 2025**
-
-[🏠 Volver al README](../README.md) • [📊 Ver Métricas](https://pokedb-astro.netlify.app) • [🐛 Reportar Issues](https://github.com/NachoSizle/pokeDB/issues)
-
-</div>
+Este comando es crucial y debe ejecutarse antes del `build` si el esquema ha cambiado.
