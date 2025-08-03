@@ -1,4 +1,4 @@
-// @ts-check
+// Configuración de Astro para PokeDB
 import { defineConfig } from 'astro/config';
 
 import sitemap from '@astrojs/sitemap';
@@ -12,10 +12,8 @@ import db from '@astrojs/db';
 export default defineConfig({
   site: 'https://pokedb-astro.netlify.app', // 🌐 URL de producción en Netlify
   base: '/',
-  output: 'server', // 🚀 Configuración SSR
-  adapter: netlify({
-    edgeMiddleware: false
-  }), // 🌐 Netlify Functions
+  output: 'server', // 🚀 Volvemos a server pero con configuración simplificada
+  adapter: netlify(), // 🌐 Netlify adapter sin configuraciones extra
   integrations: [sitemap(), compressor(), critters(), db()],
   build: {
     inlineStylesheets: "always",
