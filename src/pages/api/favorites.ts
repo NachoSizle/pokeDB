@@ -47,7 +47,6 @@ export const GET: APIRoute = async () => {
     return new Response(JSON.stringify({ 
       success: false, 
       error: 'Error interno del servidor.',
-      // Devolvemos el mensaje de error detallado para depuración
       errorMessage: error.message 
     }), { status: 500 });
   }

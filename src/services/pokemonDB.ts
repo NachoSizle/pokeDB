@@ -22,17 +22,11 @@ export interface PokemonData {
 
 /**
  * 📊 Obtiene todos los Pokémon, llenando la base de datos si es necesario.
- * Esta función es la piedra angular del proyecto. Se ejecuta durante el `build`
- * para asegurar que todos los datos estén disponibles de forma estática.
  */
 export async function getAllPokemon(): Promise<PokemonData[]> {
   try {
-    // 1. Intentar obtener los Pokémon de la base de datos
     const cachedPokemon = await db.select().from(PokemonTable).all();
-
-    // 2. Si la base de datos ya tiene los 151 Pokémon, devolverlos directamente
     if (cachedPokemon.length >= 151) {
-      console.log(`✅ Usando datos de la base de datos - ${cachedPokemon.length} Pokémon`);
       return cachedPokemon.map(p => ({
         id: p.id,
         name: p.name || '',
@@ -43,18 +37,11 @@ export async function getAllPokemon(): Promise<PokemonData[]> {
       }));
     }
 
-    // 3. Si la base de datos está vacía, llenarla desde la PokéAPI
     console.log("🔄 Base de datos vacía, obteniendo datos frescos desde PokéAPI...");
-
-    // Obtener la lista básica de los 151 Pokémon
     const pokemonList = await getPokemons(151, 0);
-    
-    // Obtener los detalles completos para cada uno en paralelo
-    console.log("📥 Obteniendo detalles de 151 Pokémon...");
     const pokemonDetailsPromises = pokemonList.results.map(p => getPokemonDetails(p.id));
     const pokemonDetailsResults = await Promise.all(pokemonDetailsPromises);
 
-    // Transformar los datos para la base de datos
     const freshPokemonData = pokemonDetailsResults.map((details: PokemonDetails) => ({
       id: details.id,
       name: details.name,
@@ -67,11 +54,7 @@ export async function getAllPokemon(): Promise<PokemonData[]> {
       updatedAt: new Date(),
     }));
 
-    // 4. Insertar los nuevos datos en la base de datos
-    console.log("💾 Llenando la base de datos con datos enriquecidos...");
     await db.insert(PokemonTable).values(freshPokemonData).execute();
-
-    console.log(`🎉 Base de datos llenada con ${freshPokemonData.length} Pokémon`);
     return freshPokemonData;
 
   } catch (error) {
@@ -94,21 +77,31 @@ export async function getPokemonById(id: number): Promise<PokemonData | null> {
 }
 
 /**
- * ⭐ Obtiene todos los Pokémon favoritos (MODO DEPURACIÓN: SOLO LEE LA TABLA FAVORITE)
+ * ⭐ Obtiene todos los Pokémon favoritos
  */
-export async function getFavoritePokemon(): Promise<any[]> { // Tipo de retorno cambiado a any[] para depuración
+export async function getFavoritePokemon(): Promise<PokemonData[]> {
   try {
-    console.log("Ejecutando consulta de depuración: SELECT * FROM FavoriteTable");
-    // Hacemos la consulta más simple posible para ver si la tabla Favorite es accesible.
-    const favoriteIds = await db.select().from(FavoriteTable).all();
-    console.log(`Consulta de depuración exitosa, se encontraron ${favoriteIds.length} favoritos.`);
-    
-    // Devolvemos los datos crudos. El frontend no los mostrará, pero evitaremos el error 500.
-    return favoriteIds;
+    const favoriteJoin = await db
+      .select({
+        id: PokemonTable.id,
+        name: PokemonTable.name,
+        sprite: PokemonTable.sprite,
+        types: PokemonTable.types,
+        stats: PokemonTable.stats,
+        updatedAt: PokemonTable.updatedAt,
+      })
+      .from(FavoriteTable)
+      .innerJoin(PokemonTable, eq(FavoriteTable.pokemonId, PokemonTable.id));
 
+    return favoriteJoin.map(p => ({ 
+      ...p, 
+      types: p.types as string[],
+      stats: p.stats as Record<string, number>,
+      isFavorite: true 
+    }));
   } catch (error) {
-    console.error("❌ Error DETALLADO en la consulta de depuración:", error);
-    throw new Error(`Error de base de datos al consultar la tabla Favorite: ${error.message}`);
+    console.error("❌ Error DETALLADO obteniendo favoritos:", error);
+    throw new Error(`Error de base de datos al obtener favoritos: ${error.message}`);
   }
 }
 
@@ -120,7 +113,6 @@ export async function addToFavorites(pokemonId: number): Promise<boolean> {
     const existing = await db.select().from(FavoriteTable).where(eq(FavoriteTable.pokemonId, pokemonId)).all();
     if (existing.length === 0) {
       await db.insert(FavoriteTable).values({ pokemonId }).execute();
-      console.log(`💖 Pokémon ${pokemonId} añadido a favoritos`);
     }
     return true;
   } catch (error) {
@@ -135,7 +127,6 @@ export async function addToFavorites(pokemonId: number): Promise<boolean> {
 export async function removeFromFavorites(pokemonId: number): Promise<boolean> {
   try {
     await db.delete(FavoriteTable).where(eq(FavoriteTable.pokemonId, pokemonId)).execute();
-    console.log(`💔 Pokémon ${pokemonId} removido de favoritos`);
     return true;
   } catch (error) {
     console.error(`❌ Error removiendo de favoritos:`, error);
