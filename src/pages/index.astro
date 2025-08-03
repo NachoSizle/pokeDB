@@ -1,19 +1,12 @@
 ---
 // 🏠 Página principal - PokeDB
-// SSR con caché TTL de 24 horas
-
-export const prerender = true; // ✨ Pre-renderizar como estática'
-// SSR con caché TTL de 24 horas
+// Página SSR con componentes optimizados
 
 import MainLayout from '../layouts/MainLayout.astro';
 import PokemonList from '../components/PokemonList.astro';
-import { getAllPokemon } from '../services/pokemonDB';
-
-// � Obtener todos los Pokémon con caché TTL
-const pokemon = await getAllPokemon();
 
 const pageTitle = "PokeDB - Pokédex Completa";
-const pageDescription = `Descubre todos los ${pokemon.length} Pokémon de la primera generación. Base de datos optimizada con caché TTL y sprites oficiales.`;
+const pageDescription = `Descubre todos los 151 Pokémon de la primera generación. Base de datos optimizada con caché TTL y sprites oficiales.`;
 ---
 
 <MainLayout title={pageTitle} description={pageDescription}>
@@ -32,7 +25,7 @@ const pageDescription = `Descubre todos los ${pokemon.length} Pokémon de la pri
 			<!-- 📊 Stats -->
 			<div class="flex flex-wrap justify-center gap-8 mb-12">
 				<div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl px-6 py-4 shadow-lg">
-					<div class="text-3xl font-bold text-blue-600 dark:text-blue-400">{pokemon.length}</div>
+					<div class="text-3xl font-bold text-blue-600 dark:text-blue-400">151</div>
 					<div class="text-sm text-gray-600 dark:text-gray-400">Pokémon</div>
 				</div>
 				
@@ -52,7 +45,7 @@ const pageDescription = `Descubre todos los ${pokemon.length} Pokémon de la pri
 	<!-- 🎮 Pokemon Grid -->
 	<section class="pb-20 px-4">
 		<div class="max-w-7xl mx-auto">
-			<PokemonList pokemons={pokemon} />
+			<PokemonList />
 		</div>
 	</section>
 </MainLayout>

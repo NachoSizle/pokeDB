@@ -14,7 +14,7 @@ export default defineConfig({
   base: '/',
   output: 'server', // 🚀 Configuración SSR
   adapter: netlify(), // 🌐 Netlify Functions
-  integrations: [sitemap(), compressor(), critters(), db()], // ✅ DB reactivada
+  integrations: [sitemap(), compressor(), critters(), db()],
   build: {
     inlineStylesheets: "always",
   },

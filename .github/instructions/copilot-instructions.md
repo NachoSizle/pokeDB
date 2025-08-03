@@ -57,6 +57,7 @@ Estas directrices están diseñadas para que los agentes de IA sean productivos 
 
 - Explica los errores y sugiere soluciones claras.
 - Para errores de hidratación en Astro, sigue el enfoque de wrapper y directiva `client:visible`.
+- **BAJO NINGUN CONCEPTO** intentes solucionar un problema bajando la versión de una dependencia. Siempre busca la solución correcta o pregunta si no estás seguro.
 
 ## 📚 Documentación y Buenas Prácticas
 

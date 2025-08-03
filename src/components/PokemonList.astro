@@ -2,12 +2,21 @@
 // 📋 Lista de Pokémon - Grid responsivo optimizado
 import type { PokemonData } from '../services/pokemonDB';
 import PokemonCard from './PokemonCard.astro';
+import { getAllPokemon } from '../services/pokemonDB';
+
+// 🎮 Obtener todos los Pokémon con caché TTL
+const allPokemons = await getAllPokemon();
 
 export interface Props {
-  pokemons: PokemonData[];
+  pokemons?: PokemonData[];
 }
 
-const { pokemons } = Astro.props;
+let { pokemons } = Astro.props;
+
+// Si no se pasan Pokémon, usar todos los disponibles
+if (!pokemons || pokemons.length === 0) {
+  pokemons = allPokemons;
+}
 ---
 
 <div class="w-full max-w-7xl mx-auto">

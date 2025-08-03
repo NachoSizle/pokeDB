@@ -6,7 +6,7 @@ import { defineDb, defineTable, column } from 'astro:db';
 // 🐾 Tabla principal de Pokémon
 export const Pokemon = defineTable({
   columns: {
-    id: column.number({ primaryKey: true }),
+    id: column.number({ primaryKey: true, autoIncrement: false }),
     name: column.text(),
     sprite: column.text(),
     updatedAt: column.date()
