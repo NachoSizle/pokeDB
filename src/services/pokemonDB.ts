@@ -1,6 +1,6 @@
 // 🗄️ Servicio de Pokémon con Astro DB + Turso - Arquitectura Robusta
 
-import { db, eq } from 'astro:db';
+import { db, eq, inArray } from 'astro:db';
 import { asDrizzleTable } from '@astrojs/db/utils';
 import { Pokemon as PokemonConfig, Favorite as FavoriteConfig } from '../../db/config';
 import { getPokemons, getPokemonDetails, type PokemonDetails } from './pokemon';
@@ -77,30 +77,38 @@ export async function getPokemonById(id: number): Promise<PokemonData | null> {
 }
 
 /**
- * ⭐ Obtiene todos los Pokémon favoritos
+ * ⭐ Obtiene todos los Pokémon favoritos (LÓGICA REFACTORIZADA SIN JOIN)
  */
 export async function getFavoritePokemon(): Promise<PokemonData[]> {
   try {
-    const favoriteJoin = await db
-      .select({
-        id: PokemonTable.id,
-        name: PokemonTable.name,
-        sprite: PokemonTable.sprite,
-        types: PokemonTable.types,
-        stats: PokemonTable.stats,
-        updatedAt: PokemonTable.updatedAt,
-      })
-      .from(FavoriteTable)
-      .innerJoin(PokemonTable, eq(FavoriteTable.pokemonId, PokemonTable.id));
+    // Paso 1: Obtener todos los IDs de la tabla de favoritos.
+    const favoriteIdRows = await db.select({ pokemonId: FavoriteTable.pokemonId }).from(FavoriteTable).all();
 
-    return favoriteJoin.map(p => ({ 
-      ...p, 
-      types: p.types as string[],
-      stats: p.stats as Record<string, number>,
+    // Si no hay favoritos, devolver un array vacío inmediatamente.
+    if (favoriteIdRows.length === 0) {
+      return [];
+    }
+
+    // Extraer los IDs a un array simple: [1, 4, 7]
+    const favoriteIds = favoriteIdRows.map(row => row.pokemonId);
+
+    // Paso 2: Obtener todos los datos de los Pokémon que están en la lista de IDs.
+    const favoritePokemons = await db.select().from(PokemonTable).where(inArray(PokemonTable.id, favoriteIds)).all();
+
+    // Mapear el resultado al formato esperado, añadiendo isFavorite = true
+    return favoritePokemons.map(p => ({ 
+      ...p,
+      id: p.id,
+      name: p.name || '',
+      sprite: p.sprite || '',
+      types: p.types ? (p.types as string[]) : [],
+      stats: p.stats ? (p.stats as Record<string, number>) : {},
+      updatedAt: p.updatedAt || new Date(),
       isFavorite: true 
     }));
+
   } catch (error) {
-    console.error("❌ Error DETALLADO obteniendo favoritos:", error);
+    console.error("❌ Error DETALLADO en getFavoritePokemon (sin JOIN):", error);
     throw new Error(`Error de base de datos al obtener favoritos: ${error.message}`);
   }
 }
