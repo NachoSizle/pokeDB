@@ -7,6 +7,7 @@
     "dev:local": "astro dev",
     "build": "astro build --remote",
     "build:local": "astro build",
+    "build:netlify": "rm -rf dist .netlify && astro build --remote",
     "preview": "astro preview",
     "astro": "astro"
   },
