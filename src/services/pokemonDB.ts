@@ -2,12 +2,11 @@
 
 import { db, eq, inArray } from 'astro:db';
 import { asDrizzleTable } from '@astrojs/db/utils';
-import { Pokemon as PokemonConfig, Favorite as FavoriteConfig } from '../../db/config';
+import { Pokemon as PokemonConfig } from '../../db/config';
 import { getPokemons, getPokemonDetails, type PokemonDetails } from './pokemon';
 
 // 🔄 Crear referencias type-safe a las tablas
 const PokemonTable = asDrizzleTable('Pokemon', PokemonConfig);
-const FavoriteTable = asDrizzleTable('Favorite', FavoriteConfig);
 
 // 🎯 Tipos de datos optimizados
 export interface PokemonData {
@@ -17,7 +16,6 @@ export interface PokemonData {
   types: string[];
   stats: Record<string, number>;
   updatedAt: Date;
-  isFavorite?: boolean;
 }
 
 /**
@@ -73,56 +71,5 @@ export async function getPokemonById(id: number): Promise<PokemonData | null> {
   } catch (error) {
     console.error(`❌ Error obteniendo Pokémon ${id}:`, error);
     return null;
-  }
-}
-
-/**
- * ⭐ Obtiene todos los Pokémon favoritos (SOLUCIÓN TEMPORAL: DEVUELVE ARRAY VACÍO)
- */
-export async function getFavoritePokemon(): Promise<PokemonData[]> {
-  console.log("ADVERTENCIA: getFavoritePokemon está devolviendo un array vacío temporalmente.");
-  console.log("Por favor, revisa los logs de Vercel para el error real de la base de datos.");
-  return [];
-}
-
-/**
- * 💖 Añade un Pokémon a favoritos
- */
-export async function addToFavorites(pokemonId: number): Promise<boolean> {
-  try {
-    const existing = await db.select().from(FavoriteTable).where(eq(FavoriteTable.pokemonId, pokemonId)).all();
-    if (existing.length === 0) {
-      await db.insert(FavoriteTable).values({ pokemonId }).execute();
-    }
-    return true;
-  } catch (error) {
-    console.error(`❌ Error añadiendo a favoritos:`, error);
-    return false;
-  }
-}
-
-/**
- * 🗑️ Remueve un Pokémon de favoritos
- */
-export async function removeFromFavorites(pokemonId: number): Promise<boolean> {
-  try {
-    await db.delete(FavoriteTable).where(eq(FavoriteTable.pokemonId, pokemonId)).execute();
-    return true;
-  }  catch (error) {
-    console.error(`❌ Error removiendo de favoritos:`, error);
-    return false;
-  }
-}
-
-/**
- * 🔍 Verifica si un Pokémon es favorito
- */
-export async function isFavorite(pokemonId: number): Promise<boolean> {
-  try {
-    const result = await db.select().from(FavoriteTable).where(eq(FavoriteTable.pokemonId, pokemonId)).all();
-    return result.length > 0;
-  } catch (error) {
-    console.error(`❌ Error verificando favorito:`, error);
-    return false;
   }
 }

@@ -15,18 +15,10 @@ export const Pokemon = defineTable({
   }
 });
 
-// ⭐ Tabla de favoritos con referencia a Pokémon
-export const Favorite = defineTable({
-  columns: {
-    pokemonId: column.number({ references: () => Pokemon.columns.id })
-  }
-});
-
 // 📊 Exportar configuración de la base de datos
 // https://astro.build/db/config
 export default defineDb({
   tables: { 
-    Pokemon, 
-    Favorite 
+    Pokemon
   }
 });

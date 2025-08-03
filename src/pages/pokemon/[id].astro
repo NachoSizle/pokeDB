@@ -7,10 +7,6 @@ export const prerender = true;
 import { getAllPokemon } from '../../services/pokemonDB';
 import MainLayout from '../../layouts/MainLayout.astro';
 import { Image } from 'astro:assets';
-import FavoriteButton from '../../components/FavoriteButton.jsx';
-
-// 🚀 Genera todas las páginas de Pokémon en el momento del build
-import { db, Favorite } from 'astro:db';
 
 // 1. 🗺️ Generar las rutas estáticas para cada Pokémon
 export async function getStaticPaths() {
@@ -23,15 +19,10 @@ export async function getStaticPaths() {
       return [];
     }
 
-    // Optimización: Obtener todos los favoritos de una sola vez
-    const favoriteIdsResult = await db.select({ id: Favorite.pokemonId }).from(Favorite).all();
-    const favoriteIdSet = new Set(favoriteIdsResult.map(f => f.id));
-
     return allPokemon.map((pokemon) => {
-      const isInitiallyFavorite = favoriteIdSet.has(pokemon.id);
       return {
         params: { id: pokemon.id.toString() },
-        props: { pokemon, isInitiallyFavorite },
+        props: { pokemon },
       };
     });
   } catch (error) {
@@ -41,7 +32,7 @@ export async function getStaticPaths() {
 }
 
 // props se reciben desde getStaticPaths
-const { pokemon, isInitiallyFavorite } = Astro.props;
+const { pokemon } = Astro.props;
 
 const pageTitle = `${pokemon.name} - PokeDB`;
 const pageDescription = `Información detallada sobre ${pokemon.name}, incluyendo sus estadísticas, tipos y habilidades.`;
@@ -102,10 +93,6 @@ const getTypeColor = (type: string) => {
               {pokemon.name}
             </h1>
             <p class="text-2xl font-semibold opacity-90">#{String(pokemon.id).padStart(3, '0')}</p>
-          </div>
-          <!-- ❤️ Botón de Favoritos (Isla Interactiva) -->
-          <div class="absolute top-4 right-4">
-            <FavoriteButton client:load pokemonId={pokemon.id} isInitiallyFavorite={isInitiallyFavorite} />
           </div>
         </div>
       </div>
