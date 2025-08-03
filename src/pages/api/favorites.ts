@@ -1,49 +1,31 @@
-// 🌟 API Endpoint - Favoritos
-// POST: Añade o remueve un Pokémon de la lista de favoritos (toggle).
+// 🌟 API Endpoint - Favoritos (MODO DEPURACIÓN)
 
 import type { APIRoute } from 'astro';
-import { isFavorite, addToFavorites, removeFromFavorites, getFavoritePokemon } from '../../services/pokemonDB';
 
-export const POST: APIRoute = async ({ request }) => {
-  try {
-    const body = await request.json();
-    const { pokemonId } = body;
+// GET: Devuelve el estado de las variables de entorno en el runtime de Vercel
+export const GET: APIRoute = async () => {
+  const appToken = import.meta.env.ASTRO_DB_APP_TOKEN;
 
-    if (!pokemonId || typeof pokemonId !== 'number' || pokemonId < 1 || pokemonId > 151) {
-      return new Response(JSON.stringify({ success: false, error: 'ID de Pokémon inválido.' }), { status: 400 });
+  const debugData = {
+    message: "Este es el resultado de la depuración del API en el servidor de Vercel.",
+    timestamp: new Date().toISOString(),
+    env: {
+      ASTRO_DB_APP_TOKEN: {
+        isDefined: appToken !== undefined && appToken !== null,
+        hasValue: !!appToken,
+        length: appToken?.length || 0,
+        partialValue: appToken ? `${appToken.substring(0, 4)}...` : 'No disponible',
+      }
     }
+  };
 
-    const wasFavorite = await isFavorite(pokemonId);
-    let success = false;
-
-    if (wasFavorite) {
-      success = await removeFromFavorites(pokemonId);
-    } else {
-      success = await addToFavorites(pokemonId);
-    }
-
-    if (success) {
-      return new Response(JSON.stringify({ 
-        success: true, 
-        isFavorite: !wasFavorite 
-      }), { status: 200 });
-    } else {
-      return new Response(JSON.stringify({ success: false, error: 'Error al actualizar favoritos.' }), { status: 500 });
-    }
-
-  } catch (error) {
-    console.error('Error en API de favoritos:', error);
-    return new Response(JSON.stringify({ success: false, error: 'Error interno del servidor.' }), { status: 500 });
-  }
+  return new Response(JSON.stringify(debugData), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' }
+  });
 };
 
-// GET: Obtiene todos los Pokémon marcados como favoritos.
-export const GET: APIRoute = async () => {
-  try {
-    const favorites = await getFavoritePokemon();
-    return new Response(JSON.stringify({ success: true, favorites }), { status: 200 });
-  } catch (error) {
-    console.error('Error obteniendo favoritos:', error);
-    return new Response(JSON.stringify({ success: false, error: 'Error interno del servidor.' }), { status: 500 });
-  }
+// POST: Deshabilitado temporalmente para depuración
+export const POST: APIRoute = async () => {
+  return new Response(JSON.stringify({ success: false, error: 'API en modo de depuración.' }), { status: 405 });
 };
