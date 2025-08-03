@@ -5,13 +5,8 @@
   command = "bun run build"
   publish = "dist"
 
-# 🔧 Configuración de funciones para Astro v5
 [functions]
   directory = ".netlify/v1/functions"
-
-[build]
-  command = "bun run build"
-  publish = "dist"
 
 # 🎯 Headers para optimización
 [[headers]]
