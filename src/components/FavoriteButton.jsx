@@ -1,5 +1,5 @@
 // src/components/FavoriteButton.jsx
-import { createSignal, onMount } from 'solid-js';
+import { createSignal } from 'solid-js';
 
 export default function FavoriteButton({ pokemonId, isInitiallyFavorite }) {
   const [isFavorite, setIsFavorite] = createSignal(isInitiallyFavorite);
