@@ -12,6 +12,8 @@
 # 🛠️ Configuración de funciones
 [functions]
   directory = ".netlify/build"
+  name = "ssr"
+  from = ".netlify/build/entry.mjs"
 
 # 🎯 Headers para optimización
 [[headers]]
