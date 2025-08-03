@@ -1,0 +1,36 @@
+---
+// 🏠 Página de prueba simple - Sin base de datos
+import MainLayout from '../layouts/MainLayout.astro';
+
+const pageTitle = "PokeDB - Test Page";
+const pageDescription = "Página de prueba para verificar deployment";
+---
+
+<MainLayout title={pageTitle} description={pageDescription}>
+	<div class="container mx-auto px-4 py-20">
+		<h1 class="text-4xl font-bold text-center mb-8">
+			🚀 PokeDB Test Page
+		</h1>
+		
+		<div class="text-center">
+			<p class="text-xl mb-8">
+				Esta es una página de prueba para verificar que Vercel funciona correctamente.
+			</p>
+			
+			<div class="bg-green-100 dark:bg-green-900 p-6 rounded-lg max-w-md mx-auto">
+				<h2 class="text-2xl font-semibold text-green-800 dark:text-green-200 mb-4">
+					✅ ¡Deployment Exitoso!
+				</h2>
+				<p class="text-green-700 dark:text-green-300">
+					Si puedes ver esta página, significa que Vercel está funcionando correctamente.
+				</p>
+			</div>
+			
+			<div class="mt-8">
+				<p class="text-gray-600 dark:text-gray-400">
+					Una vez que esto funcione, podemos agregar las funcionalidades de base de datos.
+				</p>
+			</div>
+		</div>
+	</div>
+</MainLayout>
