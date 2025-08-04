@@ -11,11 +11,11 @@ import solid from '@astrojs/solid-js'; // SOLID
 import db from '@astrojs/db';
 
 export default defineConfig({
-  site: 'https://pokedb-astro.vercel.app', // 🌐 URL de producción en Vercel
+  site: 'https://pokedb-astro.vercel.app',
   base: '/',
   output: 'server', // 🚀 Configuración SSR
   adapter: vercel(), // 🌐 Vercel adapter con zero-config
-  integrations: [sitemap(), compressor(), critters(), db(), solid()], // SOLID
+  integrations: [sitemap(), compressor(), critters(), db(), solid()],
   build: {
     inlineStylesheets: "always",
   },

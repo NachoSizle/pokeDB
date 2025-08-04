@@ -24,6 +24,19 @@ const pageDescription = `Descubre todos los 151 Pokémon de la primera generaci�
 				y rendimiento optimizado con caché inteligente.
 			</p>
 			
+			<!-- 🔍 Botón de búsqueda avanzada -->
+			<div class="mb-8">
+				<button 
+					id="openSearchModal"
+					type="button"
+					class="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105"
+				>
+					<span>🔍</span>
+					Búsqueda Avanzada
+					<span class="text-xs bg-white/20 px-2 py-1 rounded-full">Nuevo</span>
+				</button>
+			</div>
+			
 			<!-- 📊 Stats -->
 			<div class="flex flex-wrap justify-center gap-8 mb-12">
 				<div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl px-6 py-4 shadow-lg">
@@ -50,4 +63,642 @@ const pageDescription = `Descubre todos los 151 Pokémon de la primera generaci�
 			<PokemonList />
 		</div>
 	</section>
+
+	<!-- 🔍 Modal de Búsqueda Avanzada -->
+	<dialog id="searchModal" class="backdrop:bg-black/80 backdrop:backdrop-blur-sm hidden">
+		<style>
+			#searchModal {
+				/* Reset de estilos por defecto del dialog */
+				margin: 0;
+				padding: 0;
+				border: none;
+				background: transparent;
+				max-width: none;
+				max-height: none;
+				
+				/* Posicionamiento base - pantalla completa en móvil */
+				position: fixed;
+				top: 0;
+				left: 0;
+				width: 100vw;
+				height: 100vh;
+				overflow-y: auto;
+			}
+			
+			#searchModal[open] {
+				display: flex;
+			}
+			
+			#searchModal::backdrop {
+				background: rgba(0, 0, 0, 0.8);
+				backdrop-filter: blur(4px);
+			}
+			
+			/* Contenido del modal */
+			#searchModal > div {
+				background: white;
+				min-height: 100vh;
+				width: 100%;
+			}
+			
+			@media (prefers-color-scheme: dark) {
+				#searchModal > div {
+					background: rgb(17 24 39); /* gray-900 */
+				}
+			}
+			
+			/* Desktop: modal centrado */
+			@media (min-width: 768px) {
+				#searchModal {
+					align-items: center;
+					justify-content: center;
+					padding: 1rem;
+				}
+				
+				#searchModal > div {
+					background: white;
+					border: 1px solid rgb(229 231 235);
+					border-radius: 1rem;
+					box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+					min-height: auto;
+					max-height: 90vh;
+					width: 80vw;
+					max-width: 72rem;
+					overflow-y: auto;
+				}
+				
+				@media (prefers-color-scheme: dark) {
+					#searchModal > div {
+						background: rgb(17 24 39);
+						border-color: rgb(55 65 81);
+					}
+				}
+			}
+		</style>
+		<div>
+			<div class="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 p-4 md:p-6 flex justify-between items-center">
+				<h2 class="text-xl md:text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
+					<span>🔍</span>
+					Búsqueda Avanzada de Pokémon
+				</h2>
+				<button 
+					id="closeSearchModal"
+					type="button"
+					class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-white hover:text-gray-200"
+				>
+					<span class="text-xl md:text-2xl">✕</span>
+				</button>
+			</div>
+		
+		<div class="p-4 md:p-6 space-y-6">
+			<!-- 🎛️ Panel de Filtros -->
+			<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+				<!-- 📝 Columna 1: Búsqueda por texto y tipo -->
+				<div class="space-y-4">
+					<!-- Búsqueda por nombre -->
+					<div class="space-y-2">
+						<label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+							Nombre del Pokémon
+						</label>
+						<input
+							type="text"
+							id="searchName"
+							placeholder="Ej: pikachu, charizard..."
+							class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+						/>
+					</div>
+
+					<!-- Filtro por tipo -->
+					<div class="space-y-2 relative">
+						<label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+							Tipos de Pokémon
+						</label>
+						
+						<!-- 🎨 Contenedor de tags seleccionados -->
+						<div 
+							id="typesContainer"
+							class="min-h-[40px] p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 flex flex-wrap gap-1 items-center cursor-pointer hover:border-purple-500 dark:hover:border-purple-400 transition-colors"
+						>
+							<div id="selectedTypeTags" class="flex flex-wrap gap-1">
+								<!-- Los tags se mostrarán aquí -->
+							</div>
+							
+							<!-- � Placeholder cuando no hay tipos seleccionados -->
+							<div id="typesPlaceholder" class="text-gray-500 dark:text-gray-400 text-sm">
+								Selecciona tipos de Pokémon...
+							</div>
+							
+							<!-- 🔽 Botón visual para indicar que es clickeable -->
+							<div class="ml-auto text-gray-400 text-lg">
+								+
+							</div>
+						</div>
+						
+						<!-- 📋 Dropdown de opciones -->
+						<div 
+							id="typesDropdown" 
+							class="hidden absolute z-50 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto"
+						>
+							<div class="p-2 space-y-1" id="typesListContainer">
+								<!-- Los tipos disponibles se mostrarán aquí -->
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- 📊 Columna 2: Rangos de estadísticas -->
+				<div class="space-y-4">
+					<!-- Rango de poder total -->
+					<div class="space-y-2">
+						<label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+							Poder Total: <span id="statsRangeDisplay">0 - 800</span>
+						</label>
+						<div class="flex gap-2">
+							<input
+								type="range"
+								id="minStats"
+								min="0"
+								max="800"
+								value="0"
+								class="flex-1"
+							/>
+							<input
+								type="range"
+								id="maxStats"
+								min="0"
+								max="800"
+								value="800"
+								class="flex-1"
+							/>
+						</div>
+					</div>
+
+					<!-- Rango de HP -->
+					<div class="space-y-2">
+						<label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+							HP: <span id="hpRangeDisplay">0 - 255</span>
+						</label>
+						<div class="flex gap-2">
+							<input
+								type="range"
+								id="minHp"
+								min="0"
+								max="255"
+								value="0"
+								class="flex-1"
+							/>
+							<input
+								type="range"
+								id="maxHp"
+								min="0"
+								max="255"
+								value="255"
+								class="flex-1"
+							/>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- 🎮 Botones de acción -->
+			<div class="flex flex-col sm:flex-row gap-3">
+				<button
+					id="performSearch"
+					type="button"
+					class="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-lg shadow-md hover:shadow-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-300 flex items-center justify-center gap-2"
+				>
+					<span>🔍</span>
+					<span id="searchButtonText">Buscar Pokémon</span>
+				</button>
+				
+				<button
+					id="clearFilters"
+					type="button"
+					class="w-full sm:w-auto px-6 py-3 bg-gray-500 text-white font-semibold rounded-lg shadow-md hover:shadow-lg hover:bg-gray-600 transition-all duration-300 flex items-center justify-center gap-2"
+				>
+					🧹 Limpiar Filtros
+				</button>
+			</div>
+
+			<!-- 📊 Información de resultados -->
+			<div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+				<p class="text-gray-600 dark:text-gray-400 text-center sm:text-left">
+					<span class="font-semibold text-purple-600 dark:text-purple-400" id="resultsCount">
+						0
+					</span> Pokémon encontrados
+				</p>
+				
+				<div id="loadingIndicator" class="hidden items-center justify-center sm:justify-start gap-2 text-purple-600 dark:text-purple-400">
+					<span class="animate-spin">⏳</span>
+					<span>Buscando...</span>
+				</div>
+			</div>
+
+			<!-- 🎮 Grid de resultados -->
+			<div id="searchResults" class="space-y-4">
+				<div id="noResults" class="hidden text-center py-16">
+					<div class="text-6xl mb-4">🔍</div>
+					<h3 class="text-xl font-semibold text-gray-600 dark:text-gray-300 mb-2">
+						No se encontraron Pokémon
+					</h3>
+					<p class="text-gray-500 dark:text-gray-400">
+						Intenta ajustar los filtros de búsqueda
+					</p>
+				</div>
+				<div id="resultsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+					<!-- Los resultados se insertarán aquí dinámicamente -->
+				</div>
+			</div>
+		</div>
+	</div>
+	</dialog>
+
+	<!-- 🚀 JavaScript para el modal de búsqueda avanzada -->
+	<script is:inline>
+		// 🎛️ Variables y elementos del DOM
+		const openButton = document.getElementById('openSearchModal');
+		const closeButton = document.getElementById('closeSearchModal');
+		const modal = document.getElementById('searchModal');
+		const searchNameInput = document.getElementById('searchName');
+		const typesContainer = document.getElementById('typesContainer');
+		const typesDropdown = document.getElementById('typesDropdown');
+		const selectedTypeTags = document.getElementById('selectedTypeTags');
+		const typesPlaceholder = document.getElementById('typesPlaceholder');
+		const typesListContainer = document.getElementById('typesListContainer');
+		const minStatsRange = document.getElementById('minStats');
+		const maxStatsRange = document.getElementById('maxStats');
+		const minHpRange = document.getElementById('minHp');
+		const maxHpRange = document.getElementById('maxHp');
+		const statsRangeDisplay = document.getElementById('statsRangeDisplay');
+		const hpRangeDisplay = document.getElementById('hpRangeDisplay');
+		const performSearchButton = document.getElementById('performSearch');
+		const clearFiltersButton = document.getElementById('clearFilters');
+		const searchButtonText = document.getElementById('searchButtonText');
+		const loadingIndicator = document.getElementById('loadingIndicator');
+		const resultsCount = document.getElementById('resultsCount');
+		const noResults = document.getElementById('noResults');
+		const resultsGrid = document.getElementById('resultsGrid');
+
+		// 🎨 Array para tipos seleccionados y disponibles
+		let selectedTypes = [];
+		let availableTypes = [];
+
+		// 🎨 Colores para tipos de Pokémon
+		const typeColors = {
+			normal: 'bg-gray-400',
+			fire: 'bg-red-500',
+			water: 'bg-blue-500',
+			electric: 'bg-yellow-400',
+			grass: 'bg-green-500',
+			ice: 'bg-cyan-300',
+			fighting: 'bg-orange-700',
+			poison: 'bg-purple-600',
+			ground: 'bg-yellow-600',
+			flying: 'bg-indigo-400',
+			psychic: 'bg-pink-500',
+			bug: 'bg-lime-500',
+			rock: 'bg-yellow-800',
+			ghost: 'bg-indigo-800',
+			dragon: 'bg-indigo-600',
+			dark: 'bg-gray-800',
+			steel: 'bg-gray-500',
+			fairy: 'bg-pink-300',
+		};
+
+		// 🔗 Event Listeners
+		if (openButton) openButton.addEventListener('click', openModal);
+		if (closeButton) closeButton.addEventListener('click', closeModal);
+		if (modal) modal.addEventListener('click', function(e) {
+			if (e.target === modal) closeModal();
+		});
+
+		// 🎨 Dropdown de tipos - Click en todo el contenedor
+		if (typesContainer) typesContainer.addEventListener('click', function(event) {
+			// Verificar si el click fue en un botón de eliminar tag (×)
+			if (event.target.closest('.remove-tag-btn')) {
+				return; // No abrir dropdown si se clickeó en un botón de eliminar
+			}
+			toggleTypesDropdown();
+		});
+		
+		// 📱 Cerrar dropdown al hacer click fuera
+		document.addEventListener('click', function(e) {
+			if (typesDropdown && !typesDropdown.contains(e.target) && !typesContainer.contains(e.target)) {
+				typesDropdown.classList.add('hidden');
+			}
+		});
+
+		// 🎛️ Range inputs listeners
+		if (minStatsRange) minStatsRange.addEventListener('input', updateStatsDisplay);
+		if (maxStatsRange) maxStatsRange.addEventListener('input', updateStatsDisplay);
+		if (minHpRange) minHpRange.addEventListener('input', updateHpDisplay);
+		if (maxHpRange) maxHpRange.addEventListener('input', updateHpDisplay);
+
+		// 🎮 Action buttons
+		if (performSearchButton) performSearchButton.addEventListener('click', performSearch);
+		if (clearFiltersButton) clearFiltersButton.addEventListener('click', clearFilters);
+
+		// ⌨️ Enter key para búsqueda
+		if (searchNameInput) searchNameInput.addEventListener('keypress', function(e) {
+			if (e.key === 'Enter') performSearch();
+		});
+
+		// 🔓 Funciones principales
+		async function openModal() {
+			if (modal) {
+				modal.classList.remove('hidden');
+				if (modal.showModal) {
+					modal.showModal();
+				}
+				await loadAvailableTypes();
+				updateStatsDisplay();
+				updateHpDisplay();
+			}
+		}
+
+		function closeModal() {
+			if (modal) {
+				if (modal.close) {
+					modal.close();
+				}
+				modal.classList.add('hidden');
+			}
+		}
+
+		// 🎨 Cargar tipos disponibles desde la API
+		async function loadAvailableTypes() {
+			try {
+				const response = await fetch('/api/search', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ action: 'getMetadata' })
+				});
+				const data = await response.json();
+				
+				console.log('Respuesta de metadatos:', data); // Debug
+				
+				if (data.success && data.metadata && data.metadata.types && typesListContainer) {
+					availableTypes = data.metadata.types;
+					renderAvailableTypes();
+					console.log('Tipos cargados:', data.metadata.types); // Debug
+				} else {
+					console.warn('No se encontraron tipos en la respuesta:', data);
+				}
+			} catch (error) {
+				console.error('Error cargando tipos:', error);
+			}
+		}
+
+		// 🎨 Renderizar lista de tipos disponibles
+		function renderAvailableTypes() {
+			if (!typesListContainer) return;
+			
+			typesListContainer.innerHTML = '';
+			const unselectedTypes = availableTypes.filter(type => !selectedTypes.includes(type));
+			
+			unselectedTypes.forEach(function(type) {
+				const typeOption = createTypeOption(type);
+				typesListContainer.appendChild(typeOption);
+			});
+			
+			// Mostrar mensaje si no hay tipos disponibles
+			if (unselectedTypes.length === 0) {
+				const emptyMessage = document.createElement('div');
+				emptyMessage.className = 'text-center text-gray-500 dark:text-gray-400 py-2 text-sm';
+				emptyMessage.textContent = 'Todos los tipos seleccionados';
+				typesListContainer.appendChild(emptyMessage);
+			}
+		}
+
+		// 🎨 Crear opción de tipo para el dropdown
+		function createTypeOption(type) {
+			const container = document.createElement('div');
+			container.className = 'flex items-center gap-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-600 rounded cursor-pointer transition-colors';
+			container.addEventListener('click', function() { selectType(type); });
+			
+			// 🎨 Badge de color para el tipo
+			const colorClass = typeColors[type] || 'bg-gray-400';
+			const badge = document.createElement('span');
+			badge.className = 'w-4 h-4 rounded-full ' + colorClass;
+			
+			const label = document.createElement('span');
+			label.textContent = type.charAt(0).toUpperCase() + type.slice(1);
+			label.className = 'text-sm capitalize flex-1';
+			
+			container.appendChild(badge);
+			container.appendChild(label);
+			
+			return container;
+		}
+
+		// � Seleccionar un tipo
+		function selectType(type) {
+			if (!selectedTypes.includes(type)) {
+				selectedTypes.push(type);
+				renderSelectedTags();
+				renderAvailableTypes();
+			}
+			// Cerrar dropdown después de seleccionar
+			if (typesDropdown) {
+				typesDropdown.classList.add('hidden');
+			}
+		}
+
+		// 🏷️ Renderizar tags de tipos seleccionados
+		function renderSelectedTags() {
+			if (!selectedTypeTags || !typesPlaceholder) return;
+			
+			selectedTypeTags.innerHTML = '';
+			selectedTypes.forEach(function(type) {
+				const tag = createTypeTag(type);
+				selectedTypeTags.appendChild(tag);
+			});
+			
+			// Mostrar/ocultar placeholder según si hay tipos seleccionados
+			if (selectedTypes.length === 0) {
+				typesPlaceholder.style.display = 'block';
+			} else {
+				typesPlaceholder.style.display = 'none';
+			}
+		}
+
+		// 🎨 Crear tag de tipo seleccionado
+		function createTypeTag(type) {
+			const tag = document.createElement('div');
+			const colorClass = typeColors[type] || 'bg-gray-400';
+			tag.className = 'inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold text-white ' + colorClass;
+			
+			const typeText = document.createElement('span');
+			typeText.textContent = type.charAt(0).toUpperCase() + type.slice(1);
+			typeText.className = 'capitalize';
+			
+			const removeButton = document.createElement('button');
+			removeButton.type = 'button';
+			removeButton.className = 'remove-tag-btn ml-1 text-white hover:text-gray-200 transition-colors';
+			removeButton.innerHTML = '×';
+			removeButton.addEventListener('click', function() { removeType(type); });
+			
+			tag.appendChild(typeText);
+			tag.appendChild(removeButton);
+			
+			return tag;
+		}
+
+		// 🗑️ Remover un tipo seleccionado
+		function removeType(type) {
+			selectedTypes = selectedTypes.filter(t => t !== type);
+			renderSelectedTags();
+			renderAvailableTypes();
+		}
+
+		// 🔽 Alternar dropdown de tipos
+		function toggleTypesDropdown() {
+			if (typesDropdown) {
+				typesDropdown.classList.toggle('hidden');
+				if (!typesDropdown.classList.contains('hidden')) {
+					renderAvailableTypes(); // Actualizar lista al abrir
+				}
+			}
+		}
+
+		// 📊 Actualizar displays de rangos
+		function updateStatsDisplay() {
+			const min = minStatsRange ? minStatsRange.value : '0';
+			const max = maxStatsRange ? maxStatsRange.value : '800';
+			if (statsRangeDisplay) {
+				statsRangeDisplay.textContent = min + ' - ' + max;
+			}
+		}
+
+		function updateHpDisplay() {
+			const min = minHpRange ? minHpRange.value : '0';
+			const max = maxHpRange ? maxHpRange.value : '255';
+			if (hpRangeDisplay) {
+				hpRangeDisplay.textContent = min + ' - ' + max;
+			}
+		}
+
+		// 🔍 Realizar búsqueda
+		async function performSearch() {
+			setLoading(true);
+			
+			try {
+				const params = new URLSearchParams();
+				const searchName = searchNameInput ? searchNameInput.value.trim() : '';
+				const minStats = parseInt(minStatsRange ? minStatsRange.value : '0');
+				const maxStats = parseInt(maxStatsRange ? maxStatsRange.value : '800');
+				const minHp = parseInt(minHpRange ? minHpRange.value : '0');
+				const maxHp = parseInt(maxHpRange ? maxHpRange.value : '255');
+
+				if (searchName) params.append('name', searchName);
+				
+				// 🎨 Agregar tipos múltiples como parámetros separados
+				selectedTypes.forEach(function(type) {
+					params.append('types[]', type);
+				});
+				
+				if (minStats > 0) params.append('minStats', minStats.toString());
+				if (maxStats < 800) params.append('maxStats', maxStats.toString());
+				if (minHp > 0) params.append('minHp', minHp.toString());
+				if (maxHp < 255) params.append('maxHp', maxHp.toString());
+
+				const response = await fetch('/api/search?' + params.toString());
+				const data = await response.json();
+				
+				if (data.success) {
+					displayResults(data.results);
+				} else {
+					console.error('Error en búsqueda:', data.error);
+					displayResults([]);
+				}
+			} catch (error) {
+				console.error('Error realizando búsqueda:', error);
+				displayResults([]);
+			} finally {
+				setLoading(false);
+			}
+		}
+
+		// 🎨 Mostrar resultados
+		function displayResults(results) {
+			if (resultsCount) resultsCount.textContent = results.length;
+			
+			if (results.length === 0) {
+				if (noResults) noResults.classList.remove('hidden');
+				if (resultsGrid) resultsGrid.innerHTML = '';
+			} else {
+				if (noResults) noResults.classList.add('hidden');
+				if (resultsGrid) resultsGrid.innerHTML = results.map(function(pokemon) {
+					return createPokemonCard(pokemon);
+				}).join('');
+			}
+		}
+
+		// 🎴 Crear tarjeta de Pokémon
+		function createPokemonCard(pokemon) {
+			const types = JSON.parse(pokemon.types);
+			const typeBadges = types.map(function(type) {
+				const colorClass = typeColors[type] || 'bg-gray-400';
+				return '<span class="px-2 py-1 rounded-full text-xs font-semibold text-white capitalize ' + colorClass + '">' + type + '</span>';
+			}).join('');
+
+			return '<article class="group relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-gray-200/50 dark:border-gray-700/50">' +
+				'<div class="flex justify-center mb-4">' +
+					'<img src="' + pokemon.sprite + '" alt="Sprite de ' + pokemon.name + '" width="96" height="96" class="w-24 h-24 object-contain group-hover:scale-110 transition-transform duration-300" loading="lazy" />' +
+				'</div>' +
+				'<div class="text-center space-y-2">' +
+					'<div class="text-sm font-mono text-gray-500 dark:text-gray-400">#' + pokemon.id.toString().padStart(3, '0') + '</div>' +
+					'<h3 class="text-xl font-bold text-gray-800 dark:text-white capitalize group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300">' + pokemon.name + '</h3>' +
+					'<div class="flex justify-center gap-1 flex-wrap">' + typeBadges + '</div>' +
+					'<div class="text-sm text-gray-600 dark:text-gray-400 space-y-1">' +
+						'<div>💪 Poder Total: <span class="font-semibold text-purple-600 dark:text-purple-400">' + pokemon.totalStats + '</span></div>' +
+						'<div>❤️ HP: ' + pokemon.hp + ' | ⚔️ ATK: ' + pokemon.attack + ' | 🛡️ DEF: ' + pokemon.defense + '</div>' +
+					'</div>' +
+					'<a href="/pokemon/' + pokemon.id + '" class="inline-block mt-4 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-lg shadow-md hover:shadow-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-300">Ver detalles</a>' +
+				'</div>' +
+			'</article>';
+		}
+
+		// 🧹 Limpiar filtros
+		function clearFilters() {
+			if (searchNameInput) searchNameInput.value = '';
+			
+			// 🎨 Limpiar tipos seleccionados
+			selectedTypes = [];
+			renderSelectedTags();
+			renderAvailableTypes();
+			
+			if (minStatsRange) minStatsRange.value = '0';
+			if (maxStatsRange) maxStatsRange.value = '800';
+			if (minHpRange) minHpRange.value = '0';
+			if (maxHpRange) maxHpRange.value = '255';
+			
+			updateStatsDisplay();
+			updateHpDisplay();
+			displayResults([]);
+		}
+
+		// ⏳ Estado de carga
+		function setLoading(loading) {
+			if (loading) {
+				if (loadingIndicator) {
+					loadingIndicator.classList.remove('hidden');
+					loadingIndicator.classList.add('flex');
+				}
+				if (searchButtonText) searchButtonText.textContent = 'Buscando...';
+				if (performSearchButton) performSearchButton.disabled = true;
+			} else {
+				if (loadingIndicator) {
+					loadingIndicator.classList.add('hidden');
+					loadingIndicator.classList.remove('flex');
+				}
+				if (searchButtonText) searchButtonText.textContent = 'Buscar Pokémon';
+				if (performSearchButton) performSearchButton.disabled = false;
+			}
+		}
+
+		// 🎯 Inicialización
+		updateStatsDisplay();
+		updateHpDisplay();
+	</script>
 </MainLayout>
