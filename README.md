@@ -1,17 +1,18 @@
-# 🎮 PokeDB - Pokédex SSR con Astro v5 
+# 🎮 PokeDB - Pokédex con Búsqueda Avanzada y AstroDB
 
 <div align="center">
 
 ![PokeDB Banner](https://raw.githubusercontent.com/NachoSizle/pokeDB/main/public/logo.webp)
 
-**Pokédex completa con arquitectura SSR híbrida, base de datos Turso y caché TTL inteligente**
+**Pokédex completa con búsqueda avanzada, base de datos AstroDB/Turso y arquitectura SSR híbrida**
 
 [![Astro](https://img.shields.io/badge/Astro-v5.12.8-FF5D01?style=flat&logo=astro&logoColor=white)](https://astro.build)
+[![AstroDB](https://img.shields.io/badge/AstroDB-4F46E5?style=flat&logo=astro&logoColor=white)](https://docs.astro.build/en/guides/astro-db/)
 [![Vercel](https://img.shields.io/badge/Vercel-000000?style=flat&logo=vercel&logoColor=white)](https://pokedb-astro.vercel.app)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 
-[🚀 **Demo en Vivo**](https://pokedb-astro.vercel.app) • [📚 **Documentación**](#-características) • [🛠️ **Instalación**](#-instalación-local)
+[🚀 **Demo en Vivo**](https://pokedb-astro.vercel.app) • [� **Búsqueda Avanzada**](#-búsqueda-avanzada) • [�📚 **Documentación**](#-características) • [🛠️ **Instalación**](#-instalación-local)
 
 </div>
 
@@ -19,59 +20,101 @@
 
 ## 📖 **Descripción**
 
-**PokeDB** es una Pokédex moderna construida con **Astro v5** que demuestra el poder de la **arquitectura SSR híbrida**. Combina lo mejor de ambos mundos: páginas estáticas súper rápidas y funcionalidad dinámica server-side.
+**PokeDB** es una Pokédex moderna construida con **Astro v5** y **AstroDB** que demuestra el poder de la **búsqueda avanzada en tiempo real** y la **arquitectura SSR híbrida**. Combina una interfaz elegante con funcionalidades robustas de filtrado y consulta.
 
 ### 🎯 **Características Principales:**
 
-- 🏠 **Homepage Estática** → Pre-renderizada con 151 Pokémon (velocidad máxima + SEO)
-- ⚡ **Rutas Dinámicas SSR** → Páginas individuales y favoritos con datos actualizados
-- 🗄️ **Base de Datos Turso** → SQL distribuido globalmente con Astro DB
-- ⏰ **Caché TTL 24h** → Sistema inteligente que evita llamadas innecesarias a PokéAPI
-- 💖 **Sistema de Favoritos** → CRUD completo con persistencia en base de datos
-- 🌐 **Vercel Functions** → Deploy serverless automático con zero-config
-- 🎨 **Tailwind CSS v4** → Diseño moderno y responsivo
-- 📱 **PWA Ready** → Optimizado para móviles y desktop
+- 🔍 **Búsqueda Avanzada** → Modal con filtros múltiples: nombre, tipos, estadísticas y HP
+- 🏷️ **Sistema de Tags** → Selector de tipos con badges coloridos y eliminación individual
+- 🗄️ **AstroDB + Turso** → Base de datos SQL distribuida con índices optimizados
+- ⚡ **Arquitectura Híbrida** → SSG para la homepage, SSR para búsquedas dinámicas
+- � **Modal Responsivo** → HTML Dialog nativo con diseño adaptive móvil/desktop
+- � **UI Moderna** → Gradientes, animaciones y sistema de colores por tipo
+- 🚀 **Rendimiento Optimizado** → Consultas indexadas y caché inteligente
+- � **151 Pokémon** → Datos completos de la primera generación con sprites oficiales
 
 ---
 
-## 🏗️ **Arquitectura SSR Híbrida**
+## 🔍 **Búsqueda Avanzada**
 
-### 📊 **Comparativa de Rendimiento:**
+### 🎛️ **Filtros Disponibles:**
 
-| Ruta | Tipo | Tiempo de Carga | SEO | Funcionalidad |
-|------|------|-----------------|-----|---------------|
-| `/` | Estática | ~100ms | ⭐⭐⭐⭐⭐ | Solo lectura |
-| `/pokemon/[id]` | SSR | ~300ms | ⭐⭐⭐⭐ | Dinámico + DB |
-| `/favorites` | SSR | ~400ms | ⭐⭐⭐⭐ | CRUD completo |
+| Filtro | Tipo | Funcionalidad |
+|--------|------|---------------|
+| **Nombre** | Texto | Búsqueda parcial insensible a mayúsculas |
+| **Tipos** | Multi-select | Tags coloridos con eliminación individual |
+| **Poder Total** | Rango | Slider dual para estadísticas combinadas |
+| **HP** | Rango | Control de puntos de vida mínimos/máximos |
+
+### 🎨 **Sistema de Colores por Tipo:**
+- 🔥 **Fire**: Rojo - 💧 **Water**: Azul - ⚡ **Electric**: Amarillo
+- 🌿 **Grass**: Verde - 👻 **Ghost**: Índigo - 🧚 **Fairy**: Rosa
+- *... y 12 tipos más con colores únicos*
 
 ---
 
-## ✨ **Características Técnicas**
+## 🏗️ **Arquitectura**
 
 <table>
 <tr>
 <td width="50%">
 
 ### 🚀 **Frontend**
-- **Astro v5.12.8** - Framework principal
+- **Astro v5.12.8** - Framework principal con Islands
 - **SSR Híbrido** - `output: 'server'` + `prerender`
-- **Tailwind CSS v4** - Estilos utility-first
-- **TypeScript** - Tipado completo
-- **Astro Islands** - Hidratación selectiva
+- **Tailwind CSS v4** - Diseño utility-first responsivo
+- **TypeScript** - Tipado completo y robusto
+- **HTML Dialog** - Modal nativo sin dependencias
+- **Vanilla JavaScript** - Máxima compatibilidad
 
 </td>
 <td width="50%">
 
-### 🗄️ **Backend**
-- **Astro DB** - ORM integrado con Drizzle
-- **Turso** - Base de datos SQLite distribuida
-- **Netlify Functions** - Serverless deployment
-- **PokéAPI** - Datos de Pokémon oficiales
-- **Sistema de Caché TTL** - 24h de persistencia
+### 🗄️ **Backend & Base de Datos**
+- **AstroDB** - ORM integrado con Drizzle
+- **Turso** - SQLite distribuido globalmente
+- **Índices Optimizados** - Consultas eficientes
+- **API Endpoints** - Búsqueda y metadatos
+- **PokéAPI** - Datos oficiales de Pokémon
+- **Vercel Functions** - Deploy serverless
 
 </td>
 </tr>
 </table>
+
+### 🔍 **Base de Datos - Esquema Optimizado:**
+
+```typescript
+// db/config.ts - Esquema extendido para búsqueda
+export const Pokemon = defineTable({
+  columns: {
+    id: column.number({ primaryKey: true }),
+    name: column.text({ notNull: true }),
+    types: column.text({ notNull: true }), // JSON array
+    sprite: column.text({ notNull: true }),
+    primaryType: column.text({ notNull: true }), // Tipo principal
+    totalStats: column.number({ notNull: true }), // Suma de estadísticas
+    hp: column.number({ notNull: true }),
+    attack: column.number({ notNull: true }),
+    defense: column.number({ notNull: true }),
+    stats: column.text({ notNull: true }), // JSON completo
+  },
+  indexes: {
+    nameIndex: index('name_idx').on('name'),
+    typeIndex: index('type_idx').on('primaryType'),
+    statsIndex: index('stats_idx').on('totalStats'),
+    hpIndex: index('hp_idx').on('hp'),
+  }
+});
+```
+
+### 📊 **Comparativa de Rendimiento:**
+
+| Ruta | Tipo | Tiempo de Carga | SEO | Funcionalidad |
+|------|------|-----------------|-----|---------------|
+| `/` | Estática (SSG) | ~100ms | ⭐⭐⭐⭐⭐ | Grid completo + Modal |
+| `/pokemon/[id]` | SSR | ~300ms | ⭐⭐⭐⭐ | Detalles dinámicos |
+| `/api/search` | API | ~200ms | N/A | Búsqueda en tiempo real |
 
 ---
 
@@ -129,30 +172,139 @@ turso db tokens create pokedb-astro --read-write
 Crea un archivo `.env` en la raíz:
 
 ```env
-# Database
+# AstroDB + Turso
 ASTRO_DB_REMOTE_URL=libsql://tu-database-url.turso.io
 ASTRO_DB_APP_TOKEN=tu-token-aqui
 
-# Opcional: PokéAPI
+# Opcional: PokéAPI (para re-seed)
 POKEAPI_BASE_URL=https://pokeapi.co/api/v2
 ```
 
-### 5️⃣ **Migrar y Sembrar Datos**
+### 5️⃣ **Sembrar Base de Datos**
 
 ```bash
-# Aplicar migraciones
-bun run astro db push --remote
+# Ejecutar seed con datos de PokéAPI
+bun run db:seed
 
-# Sembrar datos iniciales (151 Pokémon)
-bun run astro db seed --remote
+# Verificar datos cargados
+bun run db:studio
 ```
 
-### 6️⃣ **Ejecutar en Desarrollo**
+### 6️⃣ **Desarrollo Local**
 
 ```bash
+# Iniciar servidor de desarrollo
 bun run dev
-# Abre http://localhost:4321
+
+# Build para producción
+bun run build
+
+# Vista previa del build
+bun run preview
 ```
+
+### 🎯 **URLs de Desarrollo:**
+
+- **Homepage**: `http://localhost:4321/`
+- **Búsqueda**: Click en "Búsqueda Avanzada"
+- **Detalle**: `http://localhost:4321/pokemon/25` (Pikachu)
+- **API**: `http://localhost:4321/api/search?name=pikachu`
+
+---
+
+## 🎮 **Uso de la Búsqueda Avanzada**
+
+### 🔍 **Abrir Modal de Búsqueda**
+1. Click en **"Búsqueda Avanzada"** en la homepage
+2. El modal se abre con todos los filtros disponibles
+
+### 🏷️ **Filtrar por Tipos**
+1. Click en el área **"Selecciona tipos de Pokémon..."**
+2. Selecciona uno o varios tipos del dropdown
+3. Los tipos aparecen como **tags coloridos**
+4. Click en **"×"** para eliminar un tipo específico
+
+### 📊 **Filtros de Estadísticas**
+- **Poder Total**: Arrastra los sliders para establecer rango 0-800
+- **HP**: Controla puntos de vida entre 0-255
+- **Nombre**: Búsqueda de texto parcial
+
+### 🎯 **Realizar Búsqueda**
+1. Configura los filtros deseados
+2. Click en **"🔍 Buscar Pokémon"**
+3. Los resultados aparecen en **tiempo real**
+4. **"🧹 Limpiar Filtros"** para resetear todo
+
+---
+
+---
+
+## 📁 **Estructura del Proyecto**
+
+```
+pokeDB/
+├── db/
+│   ├── config.ts          # 🗄️ Esquema AstroDB con índices
+│   └── seed.ts            # 🌱 Población de 151 Pokémon desde PokéAPI
+├── src/
+│   ├── components/
+│   │   ├── PokemonCard.astro     # 🃏 Tarjeta individual
+│   │   └── PokemonList.astro     # 📋 Grid de Pokémon
+│   ├── layouts/
+│   │   └── MainLayout.astro      # 🏗️ Layout principal con footer actualizado
+│   ├── pages/
+│   │   ├── index.astro           # 🏠 Homepage con modal de búsqueda
+│   │   ├── pokemon/
+│   │   │   └── [id].astro        # 📄 Páginas de detalle SSR
+│   │   └── api/
+│   │       └── search.ts         # 🔍 API de búsqueda avanzada
+│   ├── services/
+│   │   ├── pokemon.ts            # ⚡ Cliente PokéAPI con caché
+│   │   └── pokemonDB.ts          # 🗄️ Operaciones de base de datos
+│   └── styles/
+│       └── global.css            # 🎨 Estilos globales
+├── astro.config.mjs              # ⚙️ Configuración Astro + AstroDB
+├── tailwind.config.mjs           # 🎨 Configuración Tailwind v4
+└── vercel.json                   # 🚀 Configuración Vercel
+```
+
+### 🛣️ **Rutas y Funcionalidades:**
+
+| Ruta | Tipo | Descripción |
+|------|------|-------------|
+| `/` | SSG | Homepage con grid completo + modal búsqueda |
+| `/pokemon/[id]` | SSR | Página detalle con estadísticas y tipos |
+| `/api/search` | API | Endpoint búsqueda con filtros múltiples |
+| `/api/search` (POST) | API | Metadatos (tipos disponibles) |
+
+---
+
+## ☁️ **Despliegue en Vercel**
+
+### 🔄 **Deploy Automático:**
+
+1. **Push a GitHub**
+   ```bash
+   git add .
+   git commit -m "feat: búsqueda avanzada completa 🔍"
+   git push origin main
+   ```
+
+2. **Conectar con Vercel**
+   - Ve a [Vercel Dashboard](https://vercel.com/dashboard)
+   - Click "Add New..." → "Project"
+   - Importa tu repositorio `pokeDB`
+
+3. **Variables de Entorno en Vercel**
+   ```
+   ASTRO_DB_REMOTE_URL=libsql://tu-database.turso.io
+   ASTRO_DB_APP_TOKEN=tu-token-aqui
+   ```
+
+4. **Deploy Automático**
+   - Cada push a `main` triggerea deploy automático
+   - Build time: ~2-3 minutos
+   - ✅ URL live en segundos
 
 ---
 
@@ -165,36 +317,110 @@ bun run dev
    git add .
    git commit -m "feat: mi nueva funcionalidad"
    git push origin main
-   ```
+---
 
-2. **Conectar con Netlify**
-   - Ve a [Netlify Dashboard](https://app.netlify.com)
-   - Click "Add new site" → "Import from GitHub"
-   - Selecciona tu repositorio `pokeDB`
+## 🛠️ **Scripts Disponibles**
 
-3. **Configurar Build**
-   ```
-   Build command: npm run build
-   Publish directory: dist
-   Functions directory: .netlify/build
-   ```
+```bash
+# 🚀 Desarrollo
+bun run dev              # Servidor de desarrollo
+bun run build            # Build para producción  
+bun run preview          # Vista previa del build
 
-4. **Variables de Entorno**
-   - Ve a Site Settings → Environment variables
-   - Añade: `ASTRO_DB_REMOTE_URL` y `ASTRO_DB_APP_TOKEN`
+# 🗄️ Base de Datos
+bun run db:seed          # Sembrar 151 Pokémon desde PokéAPI
+bun run db:studio        # Abrir Drizzle Studio
+bun run db:push          # Aplicar cambios del schema
 
-5. **Deploy**
-   - Click "Deploy site"
-   - Netlify creará automáticamente las Functions serverless
+# 🔍 Debugging
+bun run astro check      # Verificar tipos TypeScript
+bun run astro --help     # Ayuda de comandos Astro
+```
 
 ### 🎯 **URLs de Producción:**
 
-- **Homepage**: https://pokedb-astro.netlify.app/
-- **Pokémon Individual**: https://pokedb-astro.netlify.app/pokemon/25
-- **Favoritos**: https://pokedb-astro.netlify.app/favorites
-- **API**: https://pokedb-astro.netlify.app/api/favorites
+- **Homepage**: https://pokedb-astro.vercel.app/
+- **Búsqueda**: Modal en homepage → "Búsqueda Avanzada"
+- **Detalle**: https://pokedb-astro.vercel.app/pokemon/25 (Pikachu)
+- **API Search**: https://pokedb-astro.vercel.app/api/search?name=charizard
 
 ---
+
+## 🎓 **Demo para Presentaciones**
+
+### 🎯 **Funcionalidades Destacadas:**
+
+1. **🔍 Búsqueda Avanzada**
+   - Modal responsivo con filtros múltiples
+   - Tags coloridos por tipo de Pokémon
+   - Sliders de rango para estadísticas
+
+2. **🗄️ AstroDB Integration**
+   - Esquema optimizado con índices
+   - Consultas eficientes en tiempo real
+   - 151 Pokémon con datos completos
+
+3. **🎨 UI/UX Moderna**
+   - Diseño responsive mobile-first
+   - Animaciones fluidas y gradientes
+   - Sistema de colores por tipo
+
+4. **⚡ Rendimiento**
+   - SSG para homepage (100ms)
+   - SSR para búsquedas dinámicas
+   - API endpoints optimizados
+
+### 📊 **Métricas de Demostración:**
+- **Datos**: 151 Pokémon de la primera generación
+- **Tipos**: 18 tipos diferentes con colores únicos  
+- **Filtros**: 4 tipos de filtros combinables
+- **Resultados**: Búsqueda instantánea < 200ms
+
+---
+
+## 🤝 **Contribución**
+
+¿Quieres contribuir? ¡Genial! 
+
+### 🔄 **Proceso:**
+1. Fork el repositorio
+2. Crea una rama: `git checkout -b feature/nueva-funcionalidad`
+3. Commit tus cambios: `git commit -m 'feat: nueva funcionalidad'`
+4. Push a la rama: `git push origin feature/nueva-funcionalidad`
+5. Abre un Pull Request
+
+### 🎯 **Ideas para Contribuir:**
+- 🔍 Más filtros de búsqueda (región, generación)
+- 🎨 Temas de color personalizables
+- 📊 Comparador de Pokémon
+- 🌍 Internacionalización (i18n)
+
+---
+
+## 📄 **Licencia**
+
+**MIT License** - Consulta el archivo [LICENSE](LICENSE) para detalles.
+
+---
+
+## 👨‍💻 **Autor**
+
+**NachoSizle** - *Desarrollo Full Stack*
+
+- GitHub: [@NachoSizle](https://github.com/NachoSizle)
+- LinkedIn: [Tu perfil](https://linkedin.com/in/tu-perfil)
+
+---
+
+<div align="center">
+
+### ⭐ **¡Si te gusta el proyecto, deja una estrella!** ⭐
+
+**Construido con ❤️ usando Astro, AstroDB y Tailwind CSS**
+
+[🚀 Ver Demo](https://pokedb-astro.vercel.app) • [📖 Documentación](https://github.com/NachoSizle/pokeDB#readme) • [🐛 Reportar Bug](https://github.com/NachoSizle/pokeDB/issues)
+
+</div>
 
 ## 📂 **Estructura del Proyecto**
 

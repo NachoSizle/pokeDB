@@ -1,6 +1,6 @@
-# 🏗️ Arquitectura Técnica - PokeDB
+# 🏗️ Arquitectura Técnica - PokeDB v2.0
 
-**Documentación técnica completa del proyecto PokeDB con Astro, siguiendo una arquitectura híbrida optimizada para rendimiento y escalabilidad.**
+**Documentación técnica completa del proyecto PokeDB con sistema de búsqueda avanzada, construido sobre Astro v5 + AstroDB + Turso, siguiendo una arquitectura híbrida optimizada para rendimiento y escalabilidad.**
 
 ---
 
@@ -8,45 +8,63 @@
 
 1. [🎯 Arquitectura General](#-arquitectura-general)
 2. [🚀 Modelo Híbrido (SSG/SSR)](#-modelo-híbrido-ssgssr)
-3. [🏝️ Islas de Interactividad con SolidJS](#️-islas-de-interactividad-con-solidjs)
-4. [🗄️ Base de Datos y Flujo de Datos](#️-base-de-datos-y-flujo-de-datos)
-5. [🌐 Deploy y CI/CD con Vercel](#-deploy-y-cicd-con-vercel)
+3. [🔍 Sistema de Búsqueda Avanzada](#-sistema-de-búsqueda-avanzada)
+4. [🗄️ Base de Datos AstroDB y Optimizaciones](#️-base-de-datos-astrodb-y-optimizaciones)
+5. [🎨 Interfaz de Usuario y Componentes](#-interfaz-de-usuario-y-componentes)
+6. [🌐 Deploy y CI/CD con Vercel](#-deploy-y-cicd-con-vercel)
 
 ---
 
 ## 🎯 **Arquitectura General**
 
-### **Stack Tecnológico**
+### **Stack Tecnológico v2.0**
 
 ```
 ┌─────────────────────────────────────────────────────┐
 │                 FRONTEND                            │
-│  Astro v5+ + SolidJS + TypeScript + Tailwind CSS    │
+│  Astro v5.12.8 + TypeScript + Tailwind CSS v4      │
+│  HTML Dialog + Vanilla JS + Responsive Design       │
 └─────────────────────────────────────────────────────┘
                             │
 ┌─────────────────────────────────────────────────────┐
-│                 ROUTING                             │
-│  Modelo Híbrido: SSG (páginas estáticas) + SSR      │
+│                 ROUTING & API                       │
+│  SSG (homepage) + SSR (detalle) + API (search)      │
+│  Modal de búsqueda avanzada integrado               │
 └─────────────────────────────────────────────────────┘
                             │
 ┌─────────────────────────────────────────────────────┐
-│                 BACKEND & BUILD                     │
-│  Vercel Functions + Astro DB + PokéAPI             │
+│                 BACKEND & LOGIC                     │
+│  Vercel Functions + AstroDB + API Endpoints         │
+│  Sistema de filtros múltiples y metadatos           │
 └─────────────────────────────────────────────────────┘
                             │
 ┌─────────────────────────────────────────────────────┐
 │                 DATABASE                            │
-│  Turso (SQLite distribuida) + Drizzle ORM          │
+│  AstroDB + Turso + Índices Optimizados              │
+│  151 Pokémon con campos extendidos para búsqueda    │
 └─────────────────────────────────────────────────────┘
+```
+
+### **Flujo de Datos de Búsqueda**
+
+```mermaid
+graph TD
+    A[Usuario abre Modal] --> B[GET /api/search metadatos]
+    B --> C[Renderiza filtros UI]
+    C --> D[Usuario configura filtros]
+    D --> E[GET /api/search + params]
+    E --> F[Query AstroDB con índices]
+    F --> G[Return JSON results]
+    G --> H[Renderiza cards dinámicos]
 ```
 
 ---
 
 ## 🚀 **Modelo Híbrido (SSG/SSR)**
 
-La clave de la arquitectura de PokeDB es el **modelo híbrido** de Astro, que nos permite decidir el modo de renderizado por página para un rendimiento óptimo.
+La arquitectura híbrida v2.0 optimiza cada ruta según su función específica:
 
-### **Estrategia de Renderizado por Ruta**
+### **Estrategia de Renderizado por Ruta v2.0**
 
 | Ruta              | Modo de Renderizado | Razón de la Elección                                                                    |
 |-------------------|---------------------|-----------------------------------------------------------------------------------------|
