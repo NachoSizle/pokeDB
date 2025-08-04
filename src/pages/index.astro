@@ -494,17 +494,21 @@ const pageDescription = `Descubre todos los 151 Pokémon de la primera generaci�
 					modal.showModal();
 				}
 				
-				// 🎯 Actualizar atributos ARIA - Ocultar contenido principal, no el body
+				// 🎯 Actualizar atributos ARIA
 				modal.setAttribute('aria-hidden', 'false');
 				
-				// ✅ Ocultar elementos principales excepto el modal (NUNCA el body)
-				const mainContent = document.getElementById('main-content');
+				// ✅ Ocultar solo elementos específicos que no contengan el modal
 				const header = document.querySelector('header[role="banner"]');
 				const footer = document.querySelector('footer[role="contentinfo"]');
+				const sections = document.querySelectorAll('main > section');
 				
-				if (mainContent) mainContent.setAttribute('aria-hidden', 'true');
 				if (header) header.setAttribute('aria-hidden', 'true');
 				if (footer) footer.setAttribute('aria-hidden', 'true');
+				
+				// Ocultar secciones individuales dentro de main, no todo el main
+				sections.forEach(section => {
+					section.setAttribute('aria-hidden', 'true');
+				});
 				
 				await loadAvailableTypes();
 				updateStatsDisplay();
@@ -524,17 +528,21 @@ const pageDescription = `Descubre todos los 151 Pokémon de la primera generaci�
 				}
 				modal.classList.add('hidden');
 				
-				// 🔒 Restaurar atributos ARIA - Restaurar visibilidad de elementos principales
+				// 🔒 Restaurar atributos ARIA
 				modal.setAttribute('aria-hidden', 'true');
 				
-				// ✅ Restaurar visibilidad de elementos principales
-				const mainContent = document.getElementById('main-content');
+				// ✅ Restaurar visibilidad de elementos específicos
 				const header = document.querySelector('header[role="banner"]');
 				const footer = document.querySelector('footer[role="contentinfo"]');
+				const sections = document.querySelectorAll('main > section');
 				
-				if (mainContent) mainContent.removeAttribute('aria-hidden');
 				if (header) header.removeAttribute('aria-hidden');
 				if (footer) footer.removeAttribute('aria-hidden');
+				
+				// Restaurar visibilidad de secciones
+				sections.forEach(section => {
+					section.removeAttribute('aria-hidden');
+				});
 				
 				// 🎯 Restaurar el foco al elemento que abrió el modal
 				if (lastFocusedElement) {
