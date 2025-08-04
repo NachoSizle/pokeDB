@@ -17,7 +17,7 @@ const cardClasses = "group relative bg-white/90 dark:bg-gray-800/90 backdrop-blu
 
 <article class={cardClasses} role="article" aria-labelledby={`pokemon-${pokemon.id}-name`}>
   <!-- 🖼️ Imagen del Pokémon -->
-  <div class="flex justify-center mb-4">
+  <div class="flex justify-center mb-4" role="img" aria-label={`Imagen de ${pokemon.name}`}>
     <Image 
       src={pokemon.sprite}
       alt={`Sprite oficial de ${pokemon.name}, Pokémon número ${pokemon.id.toString().padStart(3, '0')} de la Pokédex Nacional`}
@@ -31,9 +31,9 @@ const cardClasses = "group relative bg-white/90 dark:bg-gray-800/90 backdrop-blu
   </div>
   
   <!-- 📊 Información del Pokémon -->
-  <div class="text-center space-y-2">
+  <div class="text-center space-y-2" role="region" aria-labelledby={`pokemon-${pokemon.id}-name`}>
     <!-- 🏷️ ID -->
-    <div class="text-sm font-mono text-gray-500 dark:text-gray-400" aria-label={`Número de Pokédex ${pokemon.id}`}>
+    <div class="text-sm font-mono text-gray-500 dark:text-gray-400" role="note" aria-label={`Número de Pokédex ${pokemon.id}`}>
       #{pokemon.id.toString().padStart(3, '0')}
     </div>
     
@@ -41,6 +41,8 @@ const cardClasses = "group relative bg-white/90 dark:bg-gray-800/90 backdrop-blu
     <h3 
       id={`pokemon-${pokemon.id}-name`}
       class="text-xl font-bold text-gray-800 dark:text-white capitalize group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300"
+      role="heading"
+      aria-level="3"
     >
       {pokemon.name}
     </h3>
@@ -49,6 +51,7 @@ const cardClasses = "group relative bg-white/90 dark:bg-gray-800/90 backdrop-blu
     <a 
       href={`/pokemon/${pokemon.id}`}
       class="inline-block mt-4 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-lg shadow-md hover:shadow-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2"
+      role="link"
       aria-label={`Ver detalles completos de ${pokemon.name}`}
     >
       Ver detalles
