@@ -16,6 +16,7 @@
     "@astrojs/sitemap": "^3.4.2",
     "@astrojs/solid-js": "^5.1.0",
     "@astrojs/vercel": "^8.2.5",
+    "@rollup/rollup-linux-x64-gnu": "^4.0.0",
     "@tailwindcss/vite": "4.1.11",
     "@vercel/speed-insights": "^1.2.0",
     "astro": "^5.12.8",
