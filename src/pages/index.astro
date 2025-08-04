@@ -494,9 +494,17 @@ const pageDescription = `Descubre todos los 151 Pokémon de la primera generaci�
 					modal.showModal();
 				}
 				
-				// 🎯 Actualizar atributos ARIA
+				// 🎯 Actualizar atributos ARIA - Ocultar contenido principal, no el body
 				modal.setAttribute('aria-hidden', 'false');
-				document.body.setAttribute('aria-hidden', 'true');
+				
+				// ✅ Ocultar elementos principales excepto el modal (NUNCA el body)
+				const mainContent = document.getElementById('main-content');
+				const header = document.querySelector('header[role="banner"]');
+				const footer = document.querySelector('footer[role="contentinfo"]');
+				
+				if (mainContent) mainContent.setAttribute('aria-hidden', 'true');
+				if (header) header.setAttribute('aria-hidden', 'true');
+				if (footer) footer.setAttribute('aria-hidden', 'true');
 				
 				await loadAvailableTypes();
 				updateStatsDisplay();
@@ -516,9 +524,17 @@ const pageDescription = `Descubre todos los 151 Pokémon de la primera generaci�
 				}
 				modal.classList.add('hidden');
 				
-				// 🔒 Restaurar atributos ARIA
+				// 🔒 Restaurar atributos ARIA - Restaurar visibilidad de elementos principales
 				modal.setAttribute('aria-hidden', 'true');
-				document.body.removeAttribute('aria-hidden');
+				
+				// ✅ Restaurar visibilidad de elementos principales
+				const mainContent = document.getElementById('main-content');
+				const header = document.querySelector('header[role="banner"]');
+				const footer = document.querySelector('footer[role="contentinfo"]');
+				
+				if (mainContent) mainContent.removeAttribute('aria-hidden');
+				if (header) header.removeAttribute('aria-hidden');
+				if (footer) footer.removeAttribute('aria-hidden');
 				
 				// 🎯 Restaurar el foco al elemento que abrió el modal
 				if (lastFocusedElement) {
