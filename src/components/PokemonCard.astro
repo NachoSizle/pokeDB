@@ -3,6 +3,7 @@
 // Diseño simplificado para PokemonData
 
 import type { PokemonData } from '../services/pokemonDB';
+import { Image } from 'astro:assets';
 
 interface Props {
   pokemon: PokemonData;
@@ -17,14 +18,15 @@ const cardClasses = "group relative bg-white/90 dark:bg-gray-800/90 backdrop-blu
 <article class={cardClasses} role="article" aria-labelledby={`pokemon-${pokemon.id}-name`}>
   <!-- 🖼️ Imagen del Pokémon -->
   <div class="flex justify-center mb-4">
-    <img 
+    <Image 
       src={pokemon.sprite}
-      alt={`Sprite oficial de ${pokemon.name}, Pokémon #${pokemon.id.toString().padStart(3, '0')}`}
-      width="96"
-      height="96"
+      alt={`Sprite oficial de ${pokemon.name}, Pokémon número ${pokemon.id.toString().padStart(3, '0')} de la Pokédex Nacional`}
+      width={96}
+      height={96}
       class="w-24 h-24 object-contain group-hover:scale-110 transition-transform duration-300"
       loading="lazy"
       decoding="async"
+      format="webp"
     />
   </div>
   

@@ -852,7 +852,7 @@ const pageDescription = `Descubre todos los 151 Pokémon de la primera generaci�
 
 			return '<article class="group relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-gray-200/50 dark:border-gray-700/50 focus-within:ring-2 focus-within:ring-purple-400 focus-within:ring-offset-2" role="article" aria-labelledby="search-pokemon-' + pokemon.id + '-name">' +
 				'<div class="flex justify-center mb-4">' +
-					'<img src="' + pokemon.sprite + '" alt="Sprite oficial de ' + pokemon.name + ', Pokémon #' + pokemon.id.toString().padStart(3, '0') + '" width="96" height="96" class="w-24 h-24 object-contain group-hover:scale-110 transition-transform duration-300" loading="lazy" decoding="async" />' +
+					'<img src="' + pokemon.sprite + '" alt="Sprite oficial de ' + pokemon.name + ', Pokémon número ' + pokemon.id.toString().padStart(3, '0') + ' de la Pokédex Nacional" width="96" height="96" class="w-24 h-24 object-contain group-hover:scale-110 transition-transform duration-300" loading="lazy" decoding="async" />' +
 				'</div>' +
 				'<div class="text-center space-y-2">' +
 					'<div class="text-sm font-mono text-gray-500 dark:text-gray-400" aria-label="Número de Pokédex ' + pokemon.id + '">#' + pokemon.id.toString().padStart(3, '0') + '</div>' +
