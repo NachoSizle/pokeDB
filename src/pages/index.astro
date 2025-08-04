@@ -13,13 +13,13 @@ const pageDescription = `Descubre todos los 151 Pokémon de la primera generaci�
 
 <MainLayout title={pageTitle} description={pageDescription}>
 	<!-- 🎨 Hero Section -->
-	<section class="relative py-20 px-4">
+	<section class="relative py-20 px-4" aria-labelledby="hero-heading">
 		<div class="max-w-6xl mx-auto text-center">
-			<h1 class="text-5xl md:text-7xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-6">
+			<h1 id="hero-heading" class="text-5xl md:text-7xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-6">
 				PokeDB
 			</h1>
 			
-			<p class="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
+			<p class="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto text-enhanced">
 				Explora la <strong>Pokédex completa</strong> con datos actualizados, sprites oficiales 
 				y rendimiento optimizado con caché inteligente.
 			</p>
@@ -29,27 +29,33 @@ const pageDescription = `Descubre todos los 151 Pokémon de la primera generaci�
 				<button 
 					id="openSearchModal"
 					type="button"
-					class="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105"
+					aria-label="Abrir búsqueda avanzada de Pokémon"
+					aria-describedby="search-description"
+					class="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2"
 				>
-					<span>🔍</span>
+					<span aria-hidden="true">🔍</span>
 					Búsqueda Avanzada
-					<span class="text-xs bg-white/20 px-2 py-1 rounded-full">Nuevo</span>
+					<span class="text-xs bg-white/20 px-2 py-1 rounded-full" aria-label="Nueva funcionalidad">Nuevo</span>
 				</button>
+				<div id="search-description" class="sr-only">
+					Abre el modal de búsqueda avanzada para filtrar Pokémon por nombre, tipo y estadísticas
+				</div>
 			</div>
 			
 			<!-- 📊 Stats -->
-			<div class="flex flex-wrap justify-center gap-8 mb-12">
-				<div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl px-6 py-4 shadow-lg">
+			<div class="flex flex-wrap justify-center gap-8 mb-12" role="region" aria-labelledby="stats-heading">
+				<h2 id="stats-heading" class="sr-only">Estadísticas de la aplicación</h2>
+				<div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl px-6 py-4 shadow-lg" role="img" aria-label="151 Pokémon disponibles">
 					<div class="text-3xl font-bold text-blue-600 dark:text-blue-400">151</div>
 					<div class="text-sm text-gray-600 dark:text-gray-400">Pokémon</div>
 				</div>
 				
-				<div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl px-6 py-4 shadow-lg">
+				<div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl px-6 py-4 shadow-lg" role="img" aria-label="Aplicación optimizada con SSR">
 					<div class="text-3xl font-bold text-purple-600 dark:text-purple-400">SSR</div>
 					<div class="text-sm text-gray-600 dark:text-gray-400">Optimizado</div>
 				</div>
 				
-				<div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl px-6 py-4 shadow-lg">
+				<div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl px-6 py-4 shadow-lg" role="img" aria-label="Caché de 24 horas TTL">
 					<div class="text-3xl font-bold text-indigo-600 dark:text-indigo-400">24h</div>
 					<div class="text-sm text-gray-600 dark:text-gray-400">Caché TTL</div>
 				</div>
@@ -58,14 +64,22 @@ const pageDescription = `Descubre todos los 151 Pokémon de la primera generaci�
 	</section>
 
 	<!-- 🎮 Pokemon Grid -->
-	<section class="pb-20 px-4">
+	<section class="pb-20 px-4" aria-labelledby="pokemon-grid-heading">
 		<div class="max-w-7xl mx-auto">
+			<h2 id="pokemon-grid-heading" class="sr-only">Lista de todos los Pokémon disponibles</h2>
 			<PokemonList />
 		</div>
 	</section>
 
 	<!-- 🔍 Modal de Búsqueda Avanzada -->
-	<dialog id="searchModal" class="backdrop:bg-black/80 backdrop:backdrop-blur-sm hidden">
+	<dialog 
+		id="searchModal" 
+		class="backdrop:bg-black/80 backdrop:backdrop-blur-sm hidden"
+		role="dialog"
+		aria-labelledby="modal-title"
+		aria-describedby="modal-description"
+		aria-modal="true"
+	>
 		<style>
 			#searchModal {
 				/* Reset de estilos por defecto del dialog */
@@ -137,17 +151,22 @@ const pageDescription = `Descubre todos los 151 Pokémon de la primera generaci�
 		</style>
 		<div>
 			<div class="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 p-4 md:p-6 flex justify-between items-center">
-				<h2 class="text-xl md:text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
-					<span>🔍</span>
+				<h2 id="modal-title" class="text-xl md:text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
+					<span aria-hidden="true">🔍</span>
 					Búsqueda Avanzada de Pokémon
 				</h2>
 				<button 
 					id="closeSearchModal"
 					type="button"
-					class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-white hover:text-gray-200"
+					aria-label="Cerrar modal de búsqueda"
+					class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-gray-600 dark:text-white hover:text-gray-800 dark:hover:text-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
 				>
-					<span class="text-xl md:text-2xl">✕</span>
+					<span class="text-xl md:text-2xl" aria-hidden="true">✕</span>
 				</button>
+			</div>
+			
+			<div id="modal-description" class="sr-only">
+				Modal para búsqueda avanzada de Pokémon con filtros por nombre, tipo y estadísticas
 			</div>
 		
 		<div class="p-4 md:p-6 space-y-6">
@@ -157,20 +176,31 @@ const pageDescription = `Descubre todos los 151 Pokémon de la primera generaci�
 				<div class="space-y-4">
 					<!-- Búsqueda por nombre -->
 					<div class="space-y-2">
-						<label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+						<label 
+							for="searchName"
+							class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+						>
 							Nombre del Pokémon
 						</label>
 						<input
 							type="text"
 							id="searchName"
+							name="searchName"
 							placeholder="Ej: pikachu, charizard..."
+							aria-describedby="search-name-help"
 							class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
 						/>
+						<div id="search-name-help" class="sr-only">
+							Introduce el nombre completo o parcial del Pokémon que buscas
+						</div>
 					</div>
 
 					<!-- Filtro por tipo -->
 					<div class="space-y-2 relative">
-						<label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+						<label 
+							for="typesContainer"
+							class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+						>
 							Tipos de Pokémon
 						</label>
 						
@@ -209,103 +239,128 @@ const pageDescription = `Descubre todos los 151 Pokémon de la primera generaci�
 				<!-- 📊 Columna 2: Rangos de estadísticas -->
 				<div class="space-y-4">
 					<!-- Rango de poder total -->
-					<div class="space-y-2">
-						<label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-							Poder Total: <span id="statsRangeDisplay">0 - 800</span>
-						</label>
-						<div class="flex gap-2">
+					<fieldset class="space-y-2">
+						<legend class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+							Poder Total: <span id="statsRangeDisplay" aria-live="polite">0 - 800</span>
+						</legend>
+						<div class="flex gap-2" role="group" aria-labelledby="stats-range-legend">
+							<label for="minStats" class="sr-only">Poder total mínimo</label>
 							<input
 								type="range"
 								id="minStats"
+								name="minStats"
 								min="0"
 								max="800"
 								value="0"
+								aria-describedby="stats-range-help"
 								class="flex-1"
 							/>
+							<label for="maxStats" class="sr-only">Poder total máximo</label>
 							<input
 								type="range"
 								id="maxStats"
+								name="maxStats"
 								min="0"
 								max="800"
 								value="800"
+								aria-describedby="stats-range-help"
 								class="flex-1"
 							/>
 						</div>
-					</div>
+						<div id="stats-range-help" class="sr-only">
+							Ajusta los rangos deslizantes para filtrar Pokémon por su poder total
+						</div>
+					</fieldset>
 
 					<!-- Rango de HP -->
-					<div class="space-y-2">
-						<label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-							HP: <span id="hpRangeDisplay">0 - 255</span>
-						</label>
-						<div class="flex gap-2">
+					<fieldset class="space-y-2">
+						<legend class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+							HP: <span id="hpRangeDisplay" aria-live="polite">0 - 255</span>
+						</legend>
+						<div class="flex gap-2" role="group" aria-labelledby="hp-range-legend">
+							<label for="minHp" class="sr-only">HP mínimo</label>
 							<input
 								type="range"
 								id="minHp"
+								name="minHp"
 								min="0"
 								max="255"
 								value="0"
+								aria-describedby="hp-range-help"
 								class="flex-1"
 							/>
+							<label for="maxHp" class="sr-only">HP máximo</label>
 							<input
 								type="range"
 								id="maxHp"
+								name="maxHp"
 								min="0"
 								max="255"
 								value="255"
+								aria-describedby="hp-range-help"
 								class="flex-1"
 							/>
 						</div>
-					</div>
+						<div id="hp-range-help" class="sr-only">
+							Ajusta los rangos deslizantes para filtrar Pokémon por sus puntos de vida
+						</div>
+					</fieldset>
 				</div>
 			</div>
 
 			<!-- 🎮 Botones de acción -->
-			<div class="flex flex-col sm:flex-row gap-3">
+			<div class="flex flex-col sm:flex-row gap-3" role="group" aria-labelledby="search-actions">
+				<h3 id="search-actions" class="sr-only">Acciones de búsqueda</h3>
 				<button
 					id="performSearch"
 					type="button"
-					class="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-lg shadow-md hover:shadow-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-300 flex items-center justify-center gap-2"
+					aria-describedby="search-button-help"
+					class="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-lg shadow-md hover:shadow-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-300 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2"
 				>
-					<span>🔍</span>
+					<span aria-hidden="true">🔍</span>
 					<span id="searchButtonText">Buscar Pokémon</span>
 				</button>
+				<div id="search-button-help" class="sr-only">
+					Ejecutar la búsqueda con los filtros seleccionados
+				</div>
 				
 				<button
 					id="clearFilters"
 					type="button"
-					class="w-full sm:w-auto px-6 py-3 bg-gray-500 text-white font-semibold rounded-lg shadow-md hover:shadow-lg hover:bg-gray-600 transition-all duration-300 flex items-center justify-center gap-2"
+					aria-label="Limpiar todos los filtros de búsqueda"
+					class="w-full sm:w-auto px-6 py-3 bg-gray-500 text-white font-semibold rounded-lg shadow-md hover:shadow-lg hover:bg-gray-600 transition-all duration-300 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2"
 				>
-					🧹 Limpiar Filtros
+					<span aria-hidden="true">🧹</span> Limpiar Filtros
 				</button>
 			</div>
 
 			<!-- 📊 Información de resultados -->
-			<div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+			<div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3" role="status" aria-live="polite">
 				<p class="text-gray-600 dark:text-gray-400 text-center sm:text-left">
 					<span class="font-semibold text-purple-600 dark:text-purple-400" id="resultsCount">
 						0
 					</span> Pokémon encontrados
 				</p>
 				
-				<div id="loadingIndicator" class="hidden items-center justify-center sm:justify-start gap-2 text-purple-600 dark:text-purple-400">
-					<span class="animate-spin">⏳</span>
+				<div id="loadingIndicator" class="hidden items-center justify-center sm:justify-start gap-2 text-purple-600 dark:text-purple-400" aria-label="Buscando Pokémon">
+					<span class="animate-spin" aria-hidden="true">⏳</span>
 					<span>Buscando...</span>
 				</div>
 			</div>
 
 			<!-- 🎮 Grid de resultados -->
-			<div id="searchResults" class="space-y-4">
-				<div id="noResults" class="hidden text-center py-16">
-					<div class="text-6xl mb-4">🔍</div>
-					<h3 class="text-xl font-semibold text-gray-600 dark:text-gray-300 mb-2">
+			<div id="searchResults" class="space-y-4" role="region" aria-labelledby="search-results-heading">
+				<h3 id="search-results-heading" class="sr-only">Resultados de búsqueda</h3>
+				<div id="noResults" class="hidden text-center py-16" role="status">
+					<div class="text-6xl mb-4" aria-hidden="true">🔍</div>
+					<h4 class="text-xl font-semibold text-gray-600 dark:text-gray-300 mb-2">
 						No se encontraron Pokémon
-					</h3>
+					</h4>
 					<p class="text-gray-500 dark:text-gray-400">
 						Intenta ajustar los filtros de búsqueda
 					</p>
 				</div>
-				<div id="resultsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+				<div id="resultsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" role="grid" aria-label="Pokémon encontrados">
 					<!-- Los resultados se insertarán aquí dinámicamente -->
 				</div>
 			</div>
@@ -342,6 +397,7 @@ const pageDescription = `Descubre todos los 151 Pokémon de la primera generaci�
 		// 🎨 Array para tipos seleccionados y disponibles
 		let selectedTypes = [];
 		let availableTypes = [];
+		let lastFocusedElement = null;
 
 		// 🎨 Colores para tipos de Pokémon
 		const typeColors = {
@@ -368,18 +424,42 @@ const pageDescription = `Descubre todos los 151 Pokémon de la primera generaci�
 		// 🔗 Event Listeners
 		if (openButton) openButton.addEventListener('click', openModal);
 		if (closeButton) closeButton.addEventListener('click', closeModal);
-		if (modal) modal.addEventListener('click', function(e) {
-			if (e.target === modal) closeModal();
-		});
+		if (modal) {
+			modal.addEventListener('click', function(e) {
+				if (e.target === modal) closeModal();
+			});
+			
+			// 🔒 Gestión de teclado para el modal
+			modal.addEventListener('keydown', function(e) {
+				if (e.key === 'Escape') {
+					closeModal();
+				}
+				
+				// Mantener el foco dentro del modal
+				if (e.key === 'Tab') {
+					trapFocus(e);
+				}
+			});
+		}
 
 		// 🎨 Dropdown de tipos - Click en todo el contenedor
-		if (typesContainer) typesContainer.addEventListener('click', function(event) {
-			// Verificar si el click fue en un botón de eliminar tag (×)
-			if (event.target.closest('.remove-tag-btn')) {
-				return; // No abrir dropdown si se clickeó en un botón de eliminar
-			}
-			toggleTypesDropdown();
-		});
+		if (typesContainer) {
+			typesContainer.addEventListener('click', function(event) {
+				// Verificar si el click fue en un botón de eliminar tag (×)
+				if (event.target.closest('.remove-tag-btn')) {
+					return; // No abrir dropdown si se clickeó en un botón de eliminar
+				}
+				toggleTypesDropdown();
+			});
+			
+			// 🔧 Navegación por teclado para el selector de tipos
+			typesContainer.addEventListener('keydown', function(e) {
+				if (e.key === 'Enter' || e.key === ' ') {
+					e.preventDefault();
+					toggleTypesDropdown();
+				}
+			});
+		}
 		
 		// 📱 Cerrar dropdown al hacer click fuera
 		document.addEventListener('click', function(e) {
@@ -406,13 +486,26 @@ const pageDescription = `Descubre todos los 151 Pokémon de la primera generaci�
 		// 🔓 Funciones principales
 		async function openModal() {
 			if (modal) {
+				// 🔒 Guardar el elemento que tenía el foco antes de abrir el modal
+				lastFocusedElement = document.activeElement;
+				
 				modal.classList.remove('hidden');
 				if (modal.showModal) {
 					modal.showModal();
 				}
+				
+				// 🎯 Actualizar atributos ARIA
+				modal.setAttribute('aria-hidden', 'false');
+				document.body.setAttribute('aria-hidden', 'true');
+				
 				await loadAvailableTypes();
 				updateStatsDisplay();
 				updateHpDisplay();
+				
+				// 🎯 Enfocar el primer elemento interactivo
+				if (searchNameInput) {
+					searchNameInput.focus();
+				}
 			}
 		}
 
@@ -422,6 +515,36 @@ const pageDescription = `Descubre todos los 151 Pokémon de la primera generaci�
 					modal.close();
 				}
 				modal.classList.add('hidden');
+				
+				// 🔒 Restaurar atributos ARIA
+				modal.setAttribute('aria-hidden', 'true');
+				document.body.removeAttribute('aria-hidden');
+				
+				// 🎯 Restaurar el foco al elemento que abrió el modal
+				if (lastFocusedElement) {
+					lastFocusedElement.focus();
+				}
+			}
+		}
+		
+		// 🔒 Función para mantener el foco dentro del modal
+		function trapFocus(e) {
+			const focusableElements = modal.querySelectorAll(
+				'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+			);
+			const firstFocusable = focusableElements[0];
+			const lastFocusable = focusableElements[focusableElements.length - 1];
+
+			if (e.shiftKey) {
+				if (document.activeElement === firstFocusable) {
+					lastFocusable.focus();
+					e.preventDefault();
+				}
+			} else {
+				if (document.activeElement === lastFocusable) {
+					firstFocusable.focus();
+					e.preventDefault();
+				}
 			}
 		}
 
@@ -473,13 +596,24 @@ const pageDescription = `Descubre todos los 151 Pokémon de la primera generaci�
 		// 🎨 Crear opción de tipo para el dropdown
 		function createTypeOption(type) {
 			const container = document.createElement('div');
-			container.className = 'flex items-center gap-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-600 rounded cursor-pointer transition-colors';
+			container.className = 'flex items-center gap-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-600 rounded cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500';
+			container.setAttribute('role', 'option');
+			container.setAttribute('tabindex', '0');
+			container.setAttribute('aria-label', 'Seleccionar tipo ' + type);
+			
 			container.addEventListener('click', function() { selectType(type); });
+			container.addEventListener('keydown', function(e) {
+				if (e.key === 'Enter' || e.key === ' ') {
+					e.preventDefault();
+					selectType(type);
+				}
+			});
 			
 			// 🎨 Badge de color para el tipo
 			const colorClass = typeColors[type] || 'bg-gray-400';
 			const badge = document.createElement('span');
 			badge.className = 'w-4 h-4 rounded-full ' + colorClass;
+			badge.setAttribute('aria-hidden', 'true');
 			
 			const label = document.createElement('span');
 			label.textContent = type.charAt(0).toUpperCase() + type.slice(1);
@@ -527,6 +661,8 @@ const pageDescription = `Descubre todos los 151 Pokémon de la primera generaci�
 			const tag = document.createElement('div');
 			const colorClass = typeColors[type] || 'bg-gray-400';
 			tag.className = 'inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold text-white ' + colorClass;
+			tag.setAttribute('role', 'badge');
+			tag.setAttribute('aria-label', 'Tipo ' + type + ' seleccionado');
 			
 			const typeText = document.createElement('span');
 			typeText.textContent = type.charAt(0).toUpperCase() + type.slice(1);
@@ -534,8 +670,9 @@ const pageDescription = `Descubre todos los 151 Pokémon de la primera generaci�
 			
 			const removeButton = document.createElement('button');
 			removeButton.type = 'button';
-			removeButton.className = 'remove-tag-btn ml-1 text-white hover:text-gray-200 transition-colors';
+			removeButton.className = 'remove-tag-btn ml-1 text-white hover:text-gray-200 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white';
 			removeButton.innerHTML = '×';
+			removeButton.setAttribute('aria-label', 'Eliminar filtro de tipo ' + type);
 			removeButton.addEventListener('click', function() { removeType(type); });
 			
 			tag.appendChild(typeText);
@@ -554,7 +691,14 @@ const pageDescription = `Descubre todos los 151 Pokémon de la primera generaci�
 		// 🔽 Alternar dropdown de tipos
 		function toggleTypesDropdown() {
 			if (typesDropdown) {
+				const isHidden = typesDropdown.classList.contains('hidden');
 				typesDropdown.classList.toggle('hidden');
+				
+				// 🎯 Actualizar aria-expanded
+				if (typesContainer) {
+					typesContainer.setAttribute('aria-expanded', !isHidden ? 'true' : 'false');
+				}
+				
 				if (!typesDropdown.classList.contains('hidden')) {
 					renderAvailableTypes(); // Actualizar lista al abrir
 				}
@@ -639,22 +783,22 @@ const pageDescription = `Descubre todos los 151 Pokémon de la primera generaci�
 			const types = JSON.parse(pokemon.types);
 			const typeBadges = types.map(function(type) {
 				const colorClass = typeColors[type] || 'bg-gray-400';
-				return '<span class="px-2 py-1 rounded-full text-xs font-semibold text-white capitalize ' + colorClass + '">' + type + '</span>';
+				return '<span class="px-2 py-1 rounded-full text-xs font-semibold text-white capitalize ' + colorClass + '" role="badge" aria-label="Tipo ' + type + '">' + type + '</span>';
 			}).join('');
 
-			return '<article class="group relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-gray-200/50 dark:border-gray-700/50">' +
+			return '<article class="group relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-gray-200/50 dark:border-gray-700/50 focus-within:ring-2 focus-within:ring-purple-400 focus-within:ring-offset-2" role="article" aria-labelledby="search-pokemon-' + pokemon.id + '-name">' +
 				'<div class="flex justify-center mb-4">' +
-					'<img src="' + pokemon.sprite + '" alt="Sprite de ' + pokemon.name + '" width="96" height="96" class="w-24 h-24 object-contain group-hover:scale-110 transition-transform duration-300" loading="lazy" />' +
+					'<img src="' + pokemon.sprite + '" alt="Sprite oficial de ' + pokemon.name + ', Pokémon #' + pokemon.id.toString().padStart(3, '0') + '" width="96" height="96" class="w-24 h-24 object-contain group-hover:scale-110 transition-transform duration-300" loading="lazy" decoding="async" />' +
 				'</div>' +
 				'<div class="text-center space-y-2">' +
-					'<div class="text-sm font-mono text-gray-500 dark:text-gray-400">#' + pokemon.id.toString().padStart(3, '0') + '</div>' +
-					'<h3 class="text-xl font-bold text-gray-800 dark:text-white capitalize group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300">' + pokemon.name + '</h3>' +
-					'<div class="flex justify-center gap-1 flex-wrap">' + typeBadges + '</div>' +
-					'<div class="text-sm text-gray-600 dark:text-gray-400 space-y-1">' +
-						'<div>💪 Poder Total: <span class="font-semibold text-purple-600 dark:text-purple-400">' + pokemon.totalStats + '</span></div>' +
-						'<div>❤️ HP: ' + pokemon.hp + ' | ⚔️ ATK: ' + pokemon.attack + ' | 🛡️ DEF: ' + pokemon.defense + '</div>' +
+					'<div class="text-sm font-mono text-gray-500 dark:text-gray-400" aria-label="Número de Pokédex ' + pokemon.id + '">#' + pokemon.id.toString().padStart(3, '0') + '</div>' +
+					'<h3 id="search-pokemon-' + pokemon.id + '-name" class="text-xl font-bold text-gray-800 dark:text-white capitalize group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300">' + pokemon.name + '</h3>' +
+					'<div class="flex justify-center gap-1 flex-wrap" role="list" aria-label="Tipos de ' + pokemon.name + '">' + typeBadges + '</div>' +
+					'<div class="text-sm text-gray-600 dark:text-gray-400 space-y-1" aria-label="Estadísticas de ' + pokemon.name + '">' +
+						'<div><span aria-hidden="true">💪</span> Poder Total: <span class="font-semibold text-purple-600 dark:text-purple-400">' + pokemon.totalStats + '</span></div>' +
+						'<div><span aria-hidden="true">❤️</span> HP: ' + pokemon.hp + ' | <span aria-hidden="true">⚔️</span> ATK: ' + pokemon.attack + ' | <span aria-hidden="true">🛡️</span> DEF: ' + pokemon.defense + '</div>' +
 					'</div>' +
-					'<a href="/pokemon/' + pokemon.id + '" class="inline-block mt-4 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-lg shadow-md hover:shadow-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-300">Ver detalles</a>' +
+					'<a href="/pokemon/' + pokemon.id + '" class="inline-block mt-4 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-lg shadow-md hover:shadow-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2" aria-label="Ver detalles completos de ' + pokemon.name + '">Ver detalles</a>' +
 				'</div>' +
 			'</article>';
 		}

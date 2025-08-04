@@ -20,19 +20,25 @@ if (!pokemons || pokemons.length === 0) {
 ---
 
 <div class="w-full max-w-7xl mx-auto">
-  <section class="space-y-8">
+  <section class="space-y-8" aria-labelledby="pokemon-list-heading">
+    <h2 id="pokemon-list-heading" class="sr-only">Lista completa de Pokémon disponibles</h2>
+    
     <!-- Grid de Pokémon -->
     {pokemons.length > 0 ? (
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 justify-items-center">
+      <div 
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 justify-items-center" 
+        role="grid" 
+        aria-label={`Grid con ${pokemons.length} Pokémon disponibles`}
+      >
         {pokemons.map((pokemon) => (
-          <div class="w-full max-w-sm">
+          <div class="w-full max-w-sm" role="gridcell">
             <PokemonCard pokemon={pokemon} />
           </div>
         ))}
       </div>
     ) : (
-      <div class="text-center py-16">
-        <div class="text-6xl mb-4">🔍</div>
+      <div class="text-center py-16" role="status" aria-live="polite">
+        <div class="text-6xl mb-4" aria-hidden="true">🔍</div>
         <h3 class="text-xl font-semibold text-slate-300 mb-2">No se encontraron Pokémon</h3>
         <p class="text-slate-400">Intenta ajustar tu búsqueda o navegar por las páginas disponibles.</p>
       </div>

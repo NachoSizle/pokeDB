@@ -1,6 +1,6 @@
 // 🗄️ Servicio de Pokémon con Astro DB + Turso - Arquitectura Robusta
 
-import { db, eq, inArray } from 'astro:db';
+import { db } from 'astro:db';
 import { asDrizzleTable } from '@astrojs/db/utils';
 import { Pokemon as PokemonConfig } from '../../db/config';
 import { getPokemons, getPokemonDetails, type PokemonDetails } from './pokemon';
@@ -29,8 +29,10 @@ export interface PokemonData {
  */
 export async function getAllPokemon(): Promise<PokemonData[]> {
   try {
+    // 🔄 Intentar obtener desde base de datos
     const cachedPokemon = await db.select().from(PokemonTable).all();
     if (cachedPokemon.length >= 151) {
+      console.log(`✅ ${cachedPokemon.length} Pokémon cargados desde caché`);
       return cachedPokemon.map(p => ({
         id: p.id,
         name: p.name || '',
@@ -47,6 +49,22 @@ export async function getAllPokemon(): Promise<PokemonData[]> {
     }
 
     console.log("🔄 Base de datos vacía, obteniendo datos frescos desde PokéAPI...");
+    return await populateDatabase();
+
+  } catch (dbError) {
+    console.warn("⚠️ Error de base de datos (posible auth):", dbError);
+    
+    // 🚨 FALLBACK: Si falla la DB, usar datos directos desde PokéAPI
+    console.log("🔄 Fallback: obteniendo datos directamente desde PokéAPI...");
+    return await populateDatabase();
+  }
+}
+
+/**
+ * 🏗️ Función auxiliar para poblar la base de datos
+ */
+async function populateDatabase(): Promise<PokemonData[]> {
+  try {
     const pokemonList = await getPokemons(151, 0);
     const pokemonDetailsPromises = pokemonList.results.map(p => getPokemonDetails(p.id));
     const pokemonDetailsResults = await Promise.all(pokemonDetailsPromises);
@@ -79,12 +97,20 @@ export async function getAllPokemon(): Promise<PokemonData[]> {
       };
     });
 
-    await db.insert(PokemonTable).values(freshPokemonData).execute();
+    // 🔄 Intentar guardar en BD, pero no fallar si no se puede
+    try {
+      await db.insert(PokemonTable).values(freshPokemonData).execute();
+      console.log("✅ Datos guardados en base de datos");
+    } catch (saveError) {
+      console.warn("⚠️ No se pudieron guardar los datos en BD:", saveError);
+      console.log("✅ Continuando con datos en memoria...");
+    }
+
     return freshPokemonData;
 
-  } catch (error) {
-    console.error("❌ Error crítico obteniendo Pokémon:", error);
-    throw new Error("No se pudo obtener la lista de Pokémon. Revisa los logs del servidor.");
+  } catch (apiError) {
+    console.error("❌ Error obteniendo datos desde PokéAPI:", apiError);
+    throw new Error("No se pudo obtener datos desde ninguna fuente. Revisa tu conexión a internet.");
   }
 }
 

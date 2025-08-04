@@ -48,6 +48,63 @@ body {
   color: #e2e8f0;
 }
 
+/* 🎯 Clases de accesibilidad para screen readers */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.sr-only:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: inherit;
+  margin: inherit;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* 🎯 Estilos de enfoque mejorados para navegación por teclado */
+.focus-visible:focus,
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid rgb(168, 85, 247);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* 🎯 Mejoras de contraste para textos */
+.text-enhanced {
+  color: #f1f5f9;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+/* 🎯 Estados de enfoque para elementos interactivos */
+button, 
+a, 
+[role="button"],
+[tabindex]:not([tabindex="-1"]) {
+  transition: all 0.2s ease;
+}
+
+button:focus,
+a:focus,
+[role="button"]:focus {
+  transform: scale(1.02);
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.3);
+}
+
 /* Estilos para tarjetas de Pokémon */
 .pokemon-card {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
