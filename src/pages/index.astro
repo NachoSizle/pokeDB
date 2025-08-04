@@ -580,6 +580,12 @@ const pageDescription = `Descubre todos los 151 Pokémon de la primera generaci�
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify({ action: 'getMetadata' })
 				});
+				
+				// Verificar si la respuesta es válida
+				if (!response.ok) {
+					throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+				}
+				
 				const data = await response.json();
 				
 				console.log('Respuesta de metadatos:', data); // Debug
@@ -587,13 +593,28 @@ const pageDescription = `Descubre todos los 151 Pokémon de la primera generaci�
 				if (data.success && data.metadata && data.metadata.types && typesListContainer) {
 					availableTypes = data.metadata.types;
 					renderAvailableTypes();
-					console.log('Tipos cargados:', data.metadata.types); // Debug
+					console.log('Tipos cargados desde API:', data.metadata.types); // Debug
 				} else {
 					console.warn('No se encontraron tipos en la respuesta:', data);
+					useStaticTypes();
 				}
 			} catch (error) {
-				console.error('Error cargando tipos:', error);
+				console.error('Error cargando tipos desde API:', error);
+				console.log('🔄 Usando tipos estáticos como fallback...');
+				useStaticTypes();
 			}
+		}
+
+		// 🎯 Fallback: usar tipos estáticos cuando la API falla
+		function useStaticTypes() {
+			// Tipos comunes de Pokémon de la primera generación
+			availableTypes = [
+				'normal', 'fire', 'water', 'electric', 'grass', 'ice',
+				'fighting', 'poison', 'ground', 'flying', 'psychic',
+				'bug', 'rock', 'ghost', 'dragon', 'dark', 'steel', 'fairy'
+			];
+			renderAvailableTypes();
+			console.log('✅ Tipos estáticos cargados:', availableTypes);
 		}
 
 		// 🎨 Renderizar lista de tipos disponibles
@@ -771,6 +792,12 @@ const pageDescription = `Descubre todos los 151 Pokémon de la primera generaci�
 				if (maxHp < 255) params.append('maxHp', maxHp.toString());
 
 				const response = await fetch('/api/search?' + params.toString());
+				
+				// Verificar si la respuesta es válida
+				if (!response.ok) {
+					throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+				}
+				
 				const data = await response.json();
 				
 				if (data.success) {
@@ -778,12 +805,25 @@ const pageDescription = `Descubre todos los 151 Pokémon de la primera generaci�
 				} else {
 					console.error('Error en búsqueda:', data.error);
 					displayResults([]);
+					showSearchError('La búsqueda no está disponible temporalmente. API responde con error.');
 				}
 			} catch (error) {
 				console.error('Error realizando búsqueda:', error);
 				displayResults([]);
+				showSearchError('La búsqueda avanzada no está disponible temporalmente. Esto puede deberse a problemas temporales del servidor.');
 			} finally {
 				setLoading(false);
+			}
+		}
+
+		// 🚨 Mostrar mensaje de error de búsqueda
+		function showSearchError(message) {
+			if (noResults) {
+				noResults.classList.remove('hidden');
+				const errorDiv = noResults.querySelector('h4');
+				const errorDesc = noResults.querySelector('p');
+				if (errorDiv) errorDiv.textContent = 'Búsqueda no disponible';
+				if (errorDesc) errorDesc.textContent = message;
 			}
 		}
 
