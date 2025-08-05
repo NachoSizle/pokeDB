@@ -27,11 +27,10 @@ if (!pokemons || pokemons.length === 0) {
     {pokemons.length > 0 ? (
       <div 
         class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 justify-items-center" 
-        role="grid" 
-        aria-label={`Grid con ${pokemons.length} Pokémon disponibles`}
+        aria-label={`Lista con ${pokemons.length} Pokémon disponibles`}
       >
         {pokemons.map((pokemon) => (
-          <div class="w-full max-w-sm" role="gridcell">
+          <div class="w-full max-w-sm">
             <PokemonCard pokemon={pokemon} />
           </div>
         ))}
