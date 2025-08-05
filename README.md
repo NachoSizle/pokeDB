@@ -1,13 +1,52 @@
-# 🎮 PokeDB - Pokédex con Búsqueda Avanzada y AstroDB
+# 🎮 PokeDB - [🚀 **Demo en Vivo**](https://pokedb-astro.vercel.app) • [⚡ **Paginación**](#-sistema-de-paginación) • [🔍 **Búsqueda Avanzada**](#-búsqueda-avanzada) • [🛠️ **Instalación**](#-instalación-local)
+
+</div>
+
+---
+
+## 📖 **Descripción**
+
+**PokeDB** es una Pokédex moderna construida con **Astro v5** que demuestra el poder de la **paginación optimizada** y **performance perfecta**. Combina una interfaz elegante con funcionalidades robustas y Lighthouse Score 100/100.
+
+### 🎯 **Características Principales:**
+
+- ⚡ **Paginación Secuencial** → Carga progresiva de 12 Pokémon por página (1-12, 13-24, 25-36...)
+- 🔍 **Búsqueda Avanzada** → Modal con filtros múltiples: nombre, tipos, estadísticas y HP
+- 🏷️ **Sistema de Tags** → Selector de tipos con badges coloridos y eliminación individual
+- 🚀 **Performance Perfecta** → Lighthouse 100/100 en Accesibilidad y Performance Desktop
+- 📱 **Modal Responsivo** → HTML Dialog nativo con diseño adaptive móvil/desktop
+- 🎨 **UI Moderna** → Gradientes, animaciones y sistema de colores por tipo
+- 🖼️ **Optimización de Imágenes** → Astro Image para sprites con lazy loading y WebP
+- 🌐 **151 Pokémon** → Datos completos de la primera generación con sprites oficiales
+
+---
+
+## ⚡ **Sistema de Paginación**
+
+### 🔄 **Carga Progresiva Optimizada:**
+
+| Acción | Pokémon Mostrados | Comportamiento |
+|--------|-------------------|----------------|
+| **Carga Inicial** | 1-12 | SSR con getAllPokemon() ordenado por ID |
+| **Click "Cargar más"** | 13-24 | Fetch a /api/search con ordenamiento por ID |
+| **Segundo Click** | 25-36 | Array slice(24, 36) del dataset completo |
+| **Último Lote** | 145-151 | Botón se oculta automáticamente |
+
+### 🎯 **Optimizaciones de Performance:**
+- 📦 **Carga Inicial**: Solo 12 Pokémon via SSR para First Contentful Paint rápido
+- 🔄 **Fetch Único**: Una sola petición carga todos los 151 Pokémon ordenados
+- 📱 **DOM Progresivo**: insertAdjacentHTML para agregar sin re-renderizar
+- 🎪 **Animaciones**: slideInUp CSS para nuevas tarjetas
+- ♿ **Accesibilidad**: aria-label dinámico con conteo actualizadookédex con Paginación Optimizada y Performance Perfect
 
 <div align="center">
 
 ![PokeDB Banner](https://raw.githubusercontent.com/NachoSizle/pokeDB/main/public/logo.webp)
 
-**Pokédex completa con búsqueda avanzada, base de datos AstroDB/Turso y arquitectura SSR híbrida**
+**Pokédex completa con paginación secuencial, búsqueda avanzada y Lighthouse 100/100**
 
 [![Astro](https://img.shields.io/badge/Astro-v5.12.8-FF5D01?style=flat&logo=astro&logoColor=white)](https://astro.build)
-[![AstroDB](https://img.shields.io/badge/AstroDB-4F46E5?style=flat&logo=astro&logoColor=white)](https://docs.astro.build/en/guides/astro-db/)
+[![Lighthouse](https://img.shields.io/badge/Lighthouse-100%2F100-00C853?style=flat&logo=lighthouse&logoColor=white)](https://pagespeed.web.dev/)
 [![Vercel](https://img.shields.io/badge/Vercel-000000?style=flat&logo=vercel&logoColor=white)](https://pokedb-astro.vercel.app)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
@@ -53,30 +92,30 @@
 
 ---
 
-## 🏗️ **Arquitectura**
+## 🏗️ **Arquitectura Optimizada**
 
 <table>
 <tr>
 <td width="50%">
 
-### 🚀 **Frontend**
+### 🚀 **Frontend Performance**
 - **Astro v5.12.8** - Framework principal con Islands
-- **SSR Híbrido** - `output: 'server'` + `prerender`
+- **Paginación Progresiva** - Carga secuencial 12x12 Pokémon
 - **Tailwind CSS v4** - Diseño utility-first responsivo
 - **TypeScript** - Tipado completo y robusto
 - **HTML Dialog** - Modal nativo sin dependencias
-- **Vanilla JavaScript** - Máxima compatibilidad
+- **Vanilla JavaScript** - Máxima compatibilidad y rendimiento
 
 </td>
 <td width="50%">
 
-### 🗄️ **Backend & Base de Datos**
-- **AstroDB** - ORM integrado con Drizzle
-- **Turso** - SQLite distribuido globalmente
-- **Índices Optimizados** - Consultas eficientes
-- **API Endpoints** - Búsqueda y metadatos
+### 🗄️ **Backend & API**
+- **pokemonDB.ts** - Servicio de datos optimizado
+- **Fetch con Cache** - Una petición, múltiples paginaciones
+- **Ordenamiento por ID** - Secuencia 1,2,3...151 garantizada
+- **API Endpoints** - /api/search para búsqueda y listado
 - **PokéAPI** - Datos oficiales de Pokémon
-- **Vercel Functions** - Deploy serverless
+- **Vercel Functions** - Deploy serverless optimizado
 
 </td>
 </tr>
@@ -85,27 +124,41 @@
 ### 🔍 **Base de Datos - Esquema Optimizado:**
 
 ```typescript
-// db/config.ts - Esquema extendido para búsqueda
-export const Pokemon = defineTable({
-  columns: {
-    id: column.number({ primaryKey: true }),
-    name: column.text({ notNull: true }),
-    types: column.text({ notNull: true }), // JSON array
-    sprite: column.text({ notNull: true }),
-    primaryType: column.text({ notNull: true }), // Tipo principal
-    totalStats: column.number({ notNull: true }), // Suma de estadísticas
-    hp: column.number({ notNull: true }),
-    attack: column.number({ notNull: true }),
-    defense: column.number({ notNull: true }),
-    stats: column.text({ notNull: true }), // JSON completo
-  },
-  indexes: {
-    nameIndex: index('name_idx').on('name'),
-    typeIndex: index('type_idx').on('primaryType'),
-    statsIndex: index('stats_idx').on('totalStats'),
-    hpIndex: index('hp_idx').on('hp'),
+### ⚡ **Paginación Optimizada - Código Principal:**
+
+```typescript
+// PokemonList.astro - Paginación secuencial
+if (showInitialLoad && pokemons.length === 0) {
+  const { getAllPokemon } = await import('../services/pokemonDB');
+  const allPokemons = await getAllPokemon();
+  pokemons = allPokemons.sort((a, b) => a.id - b.id).slice(0, pageSize);
+}
+
+// Script de paginación frontend
+async function loadMorePokemon() {
+  if (allPokemon.length === 0) {
+    const response = await fetch('/api/search');
+    const data = await response.json();
+    allPokemon = data.results.sort((a, b) => a.id - b.id);
   }
-});
+  
+  const startIndex = currentPageIndex * pageSize;
+  const endIndex = startIndex + pageSize;
+  const newPokemon = allPokemon.slice(startIndex, endIndex);
+  // Agregar al DOM con insertAdjacentHTML...
+}
+```
+
+### 🔍 **API Endpoint - Ordenamiento Garantizado:**
+
+```typescript
+// /api/search.ts - Lógica de ordenamiento
+if (name || selectedTypes.length > 0 || hasFilters) {
+  filteredPokemon.sort((a, b) => b.totalStats - a.totalStats); // Por poder
+} else {
+  filteredPokemon.sort((a, b) => a.id - b.id); // Por ID secuencial
+}
+```
 ```
 
 ### 📊 **Comparativa de Rendimiento:**
@@ -122,9 +175,14 @@ export const Pokemon = defineTable({
 
 - **Node.js** ≥ 20.0.0
 - **Bun** (recomendado) o npm
-- **Turso CLI** ≥ 0.54
 - **Git** y cuenta GitHub
-- **Cuenta Netlify** (plan gratuito)
+- **Cuenta Vercel** (plan gratuito)
+
+### 📚 **Documentación Completa:**
+- 📋 [Arquitectura Técnica](./docs/ARCHITECTURE.md) - Sistema modular y componentes
+- 🚀 [Performance & Lighthouse](./docs/PERFORMANCE.md) - Optimizaciones 100/100
+- 🔍 [Sistema de Búsqueda](./docs/SEARCH_SYSTEM.md) - Modal avanzado y filtros
+- 🌐 [Deploy en Vercel](./docs/VERCEL_MIGRATION.md) - Configuración production
 
 ### 📦 **Instalación Turso CLI:**
 
