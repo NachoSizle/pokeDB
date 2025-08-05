@@ -1,21 +1,21 @@
 ---
-// 📋 Lista de Pokémon - Grid responsivo optimizado
+// 📋 Lista de Pokémon - Grid responsivo optimizado con defer loading
 import type { PokemonData } from '../services/pokemonDB';
 import PokemonCard from './PokemonCard.astro';
-import { getAllPokemon } from '../services/pokemonDB';
-
-// 🎮 Obtener todos los Pokémon con caché TTL
-const allPokemons = await getAllPokemon();
 
 export interface Props {
   pokemons?: PokemonData[];
+  showInitialLoad?: boolean;
 }
 
-let { pokemons } = Astro.props;
+let { pokemons = [], showInitialLoad = true } = Astro.props;
 
-// Si no se pasan Pokémon, usar todos los disponibles
-if (!pokemons || pokemons.length === 0) {
-  pokemons = allPokemons;
+// 🚀 Para optimizar Core Web Vitals, solo cargamos los primeros 12 Pokémon inicialmente
+if (showInitialLoad && pokemons.length === 0) {
+  const { getAllPokemon } = await import('../services/pokemonDB');
+  const allPokemons = await getAllPokemon();
+  // Limitar a 12 para carga inicial más rápida
+  pokemons = allPokemons.slice(0, 12);
 }
 ---
 
@@ -42,8 +42,49 @@ if (!pokemons || pokemons.length === 0) {
         <p class="text-slate-400">Intenta ajustar tu búsqueda o navegar por las páginas disponibles.</p>
       </div>
     )}
+    
+    <!-- Botón para cargar más Pokémon (mejora UX) -->
+    {showInitialLoad && pokemons.length === 12 && (
+      <div class="text-center mt-8">
+        <button 
+          id="load-more-btn"
+          class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+          aria-label="Cargar más Pokémon"
+        >
+          ⚡ Cargar más Pokémon
+        </button>
+      </div>
+    )}
   </section>
 </div>
+
+<!-- Script para cargar más Pokémon progresivamente -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const loadMoreBtn = document.getElementById('load-more-btn') as HTMLButtonElement;
+    if (loadMoreBtn) {
+      loadMoreBtn.addEventListener('click', async () => {
+        loadMoreBtn.textContent = '⏳ Cargando...';
+        loadMoreBtn.disabled = true;
+        
+        try {
+          // Cargar todos los Pokémon
+          const response = await fetch('/api/search');
+          const data = await response.json();
+          
+          if (data.success) {
+            // Recargar página con todos los resultados
+            window.location.href = '/?showAll=true';
+          }
+        } catch (error) {
+          console.error('Error loading more Pokemon:', error);
+          loadMoreBtn.textContent = '❌ Error - Intenta de nuevo';
+          loadMoreBtn.disabled = false;
+        }
+      });
+    }
+  });
+</script>
 
 <!-- Efectos visuales adicionales -->
 <style>

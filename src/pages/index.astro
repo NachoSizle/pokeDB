@@ -7,9 +7,20 @@ export const prerender = true;
 import MainLayout from '../layouts/MainLayout.astro';
 import PokemonList from '../components/PokemonList.astro';
 import AdvancedSearchModal from '../components/AdvancedSearchModal.astro';
+import { getAllPokemon, type PokemonData } from '../services/pokemonDB';
 
 const pageTitle = "PokeDB - Pokédex Completa";
 const pageDescription = `Descubre todos los 151 Pokémon de la primera generación. Base de datos optimizada con caché TTL y sprites oficiales.`;
+
+// 🚀 Manejar parámetro showAll para optimizar carga inicial
+const url = Astro.url;
+const showAll = url.searchParams.get('showAll') === 'true';
+
+let pokemons: PokemonData[] = [];
+if (showAll) {
+  // Cargar todos los Pokémon solo si se solicita
+  pokemons = await getAllPokemon();
+}
 ---
 
 <MainLayout title={pageTitle} description={pageDescription}>
@@ -68,7 +79,7 @@ const pageDescription = `Descubre todos los 151 Pokémon de la primera generaci�
 	<section class="pb-20 px-4" aria-labelledby="pokemon-grid-heading">
 		<div class="max-w-7xl mx-auto">
 			<h2 id="pokemon-grid-heading" class="sr-only">Lista de todos los Pokémon disponibles</h2>
-			<PokemonList />
+			<PokemonList pokemons={pokemons} showInitialLoad={!showAll} />
 		</div>
 	</section>
 
