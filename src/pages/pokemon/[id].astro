@@ -40,6 +40,7 @@ const pokemonStats = typeof pokemon.stats === 'string' ? JSON.parse(pokemon.stat
 
 const pageTitle = `${pokemon.name} - PokeDB`;
 const pageDescription = `Información detallada sobre ${pokemon.name}, incluyendo sus estadísticas, tipos y habilidades.`;
+const pokemonImage = pokemon.sprite || `/logo.webp`;
 
 // 🎨 Función para obtener el color de fondo según el tipo de Pokémon
 const getTypeColor = (type: string) => {
@@ -67,7 +68,7 @@ const getTypeColor = (type: string) => {
 };
 ---
 
-<MainLayout title={pageTitle} description={pageDescription}>
+<MainLayout title={pageTitle} description={pageDescription} image={pokemonImage}>
   <!-- 🔙 Botón volver -->
   <div class="pt-4 px-4">
     <div class="max-w-7xl mx-auto">

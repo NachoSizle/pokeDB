@@ -12,7 +12,7 @@ export interface Props {
 const {
   title,
   description,
-  image = "/favicon.svg",
+  image = "/logo.webp",
 } = Astro.props;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 ---
@@ -45,19 +45,35 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     <meta name="theme-color" content="#8b5cf6" />
     <link rel="canonical" href={canonicalURL} />
 
-    <!-- Open Graph -->
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="PokeDB" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonicalURL} />
     <meta property="og:image" content={new URL(image, Astro.site)} />
-    <meta property="og:type" content="website" />
+    <meta property="og:image:alt" content="PokeDB - Pokédex moderna con paginación optimizada" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta property="og:locale" content="es_ES" />
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@NachoSizle" />
+    <meta name="twitter:creator" content="@NachoSizle" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={new URL(image, Astro.site)} />
+    <meta name="twitter:image:alt" content="PokeDB - Pokédex moderna con paginación optimizada" />
+
+    <!-- LinkedIn -->
+    <meta property="og:image:secure_url" content={new URL(image, Astro.site)} />
+    
+    <!-- WhatsApp / Telegram -->
+    <meta property="og:image:type" content="image/webp" />
+    
+    <!-- Discord -->
+    <meta name="theme-color" content="#8b5cf6" />
   </head>
   <body class="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
     <!-- Enlace de accesibilidad para saltar al contenido principal -->
