@@ -1,0 +1,301 @@
+---
+// 🔍 Componente AdvancedSearchModal - Modal de búsqueda avanzada de Pokémon
+// Separado del index.astro para mejorar mantenibilidad
+---
+
+<!-- 🔍 Modal de Búsqueda Avanzada -->
+<dialog 
+	id="searchModal" 
+	class="backdrop:bg-black/80 backdrop:backdrop-blur-sm hidden"
+	role="dialog"
+	aria-labelledby="modal-title"
+	aria-describedby="modal-description"
+	aria-modal="true"
+>
+	<style>
+		#searchModal {
+			/* Reset de estilos por defecto del dialog */
+			margin: 0;
+			padding: 0;
+			border: none;
+			background: transparent;
+			max-width: none;
+			max-height: none;
+			
+			/* Posicionamiento base - pantalla completa en móvil */
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100vw;
+			height: 100vh;
+			overflow-y: auto;
+		}
+		
+		#searchModal[open] {
+			display: flex;
+		}
+		
+		#searchModal::backdrop {
+			background: rgba(0, 0, 0, 0.8);
+			backdrop-filter: blur(4px);
+		}
+		
+		/* Contenido del modal */
+		#searchModal > div {
+			background: white;
+			min-height: 100vh;
+			width: 100%;
+		}
+		
+		@media (prefers-color-scheme: dark) {
+			#searchModal > div {
+				background: rgb(17 24 39); /* gray-900 */
+			}
+		}
+		
+		/* Desktop: modal centrado */
+		@media (min-width: 768px) {
+			#searchModal {
+				align-items: center;
+				justify-content: center;
+				padding: 1rem;
+			}
+			
+			#searchModal > div {
+				background: white;
+				border: 1px solid rgb(229 231 235);
+				border-radius: 1rem;
+				box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+				min-height: auto;
+				max-height: 90vh;
+				width: 80vw;
+				max-width: 72rem;
+				overflow-y: auto;
+			}
+			
+			@media (prefers-color-scheme: dark) {
+				#searchModal > div {
+					background: rgb(17 24 39);
+					border-color: rgb(55 65 81);
+				}
+			}
+		}
+	</style>
+	<div>
+		<div class="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 p-4 md:p-6 flex justify-between items-center">
+			<h2 id="modal-title" class="text-xl md:text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
+				<span aria-hidden="true">🔍</span>
+				Búsqueda Avanzada de Pokémon
+			</h2>
+			<button 
+				id="closeSearchModal"
+				type="button"
+				aria-label="Cerrar modal de búsqueda"
+				class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-gray-600 dark:text-white hover:text-gray-800 dark:hover:text-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
+			>
+				<span class="text-xl md:text-2xl" aria-hidden="true">✕</span>
+			</button>
+		</div>
+		
+		<div id="modal-description" class="sr-only">
+			Modal para búsqueda avanzada de Pokémon con filtros por nombre, tipo y estadísticas
+		</div>
+	
+	<div class="p-4 md:p-6 space-y-6">
+		<!-- 🎛️ Panel de Filtros -->
+		<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+			<!-- 📝 Columna 1: Búsqueda por texto y tipo -->
+			<div class="space-y-4">
+				<!-- Búsqueda por nombre -->
+				<div class="space-y-2">
+					<label 
+						for="searchName"
+						class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+					>
+						Nombre del Pokémon
+					</label>
+					<input
+						type="text"
+						id="searchName"
+						name="searchName"
+						placeholder="Ej: pikachu, charizard..."
+						aria-describedby="search-name-help"
+						class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+					/>
+					<div id="search-name-help" class="sr-only">
+						Introduce el nombre completo o parcial del Pokémon que buscas
+					</div>
+				</div>
+
+				<!-- Filtro por tipo -->
+				<div class="space-y-2 relative">
+					<label 
+						for="typesContainer"
+						class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+					>
+						Tipos de Pokémon
+					</label>
+					
+					<!-- 🎨 Contenedor de tags seleccionados -->
+					<div 
+						id="typesContainer"
+						class="min-h-[40px] p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 flex flex-wrap gap-1 items-center cursor-pointer hover:border-purple-500 dark:hover:border-purple-400 transition-colors"
+					>
+						<div id="selectedTypeTags" class="flex flex-wrap gap-1">
+							<!-- Los tags se mostrarán aquí -->
+						</div>
+						
+						<!-- � Placeholder cuando no hay tipos seleccionados -->
+						<div id="typesPlaceholder" class="text-gray-500 dark:text-gray-400 text-sm">
+							Selecciona tipos de Pokémon...
+						</div>
+						
+						<!-- 🔽 Botón visual para indicar que es clickeable -->
+						<div class="ml-auto text-gray-400 text-lg">
+							+
+						</div>
+					</div>
+					
+					<!-- 📋 Dropdown de opciones -->
+					<div 
+						id="typesDropdown" 
+						class="hidden absolute z-50 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto"
+					>
+						<div class="p-2 space-y-1" id="typesListContainer">
+							<!-- Los tipos disponibles se mostrarán aquí -->
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- 📊 Columna 2: Rangos de estadísticas -->
+			<div class="space-y-4">
+				<!-- Rango de poder total -->
+				<fieldset class="space-y-2">
+					<legend class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+						Poder Total: <span id="statsRangeDisplay" aria-live="polite">0 - 800</span>
+					</legend>
+					<div class="flex gap-2" role="group" aria-labelledby="stats-range-legend">
+						<label for="minStats" class="sr-only">Poder total mínimo</label>
+						<input
+							type="range"
+							id="minStats"
+							name="minStats"
+							min="0"
+							max="800"
+							value="0"
+							aria-describedby="stats-range-help"
+							class="flex-1"
+						/>
+						<label for="maxStats" class="sr-only">Poder total máximo</label>
+						<input
+							type="range"
+							id="maxStats"
+							name="maxStats"
+							min="0"
+							max="800"
+							value="800"
+							aria-describedby="stats-range-help"
+							class="flex-1"
+						/>
+					</div>
+					<div id="stats-range-help" class="sr-only">
+						Ajusta los rangos deslizantes para filtrar Pokémon por su poder total
+					</div>
+				</fieldset>
+
+				<!-- Rango de HP -->
+				<fieldset class="space-y-2">
+					<legend class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+						HP: <span id="hpRangeDisplay" aria-live="polite">0 - 255</span>
+					</legend>
+					<div class="flex gap-2" role="group" aria-labelledby="hp-range-legend">
+						<label for="minHp" class="sr-only">HP mínimo</label>
+						<input
+							type="range"
+							id="minHp"
+							name="minHp"
+							min="0"
+							max="255"
+							value="0"
+							aria-describedby="hp-range-help"
+							class="flex-1"
+						/>
+						<label for="maxHp" class="sr-only">HP máximo</label>
+						<input
+							type="range"
+							id="maxHp"
+							name="maxHp"
+							min="0"
+							max="255"
+							value="255"
+							aria-describedby="hp-range-help"
+							class="flex-1"
+						/>
+					</div>
+					<div id="hp-range-help" class="sr-only">
+						Ajusta los rangos deslizantes para filtrar Pokémon por sus puntos de vida
+					</div>
+				</fieldset>
+			</div>
+		</div>
+
+		<!-- 🎮 Botones de acción -->
+		<div class="flex flex-col sm:flex-row gap-3" role="group" aria-labelledby="search-actions">
+			<h3 id="search-actions" class="sr-only">Acciones de búsqueda</h3>
+			<button
+				id="performSearch"
+				type="button"
+				aria-describedby="search-button-help"
+				class="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-lg shadow-md hover:shadow-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-300 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2"
+			>
+				<span aria-hidden="true">🔍</span>
+				<span id="searchButtonText">Buscar Pokémon</span>
+			</button>
+			<div id="search-button-help" class="sr-only">
+				Ejecutar la búsqueda con los filtros seleccionados
+			</div>
+			
+			<button
+				id="clearFilters"
+				type="button"
+				aria-label="Limpiar todos los filtros de búsqueda"
+				class="w-full sm:w-auto px-6 py-3 bg-gray-500 text-white font-semibold rounded-lg shadow-md hover:shadow-lg hover:bg-gray-600 transition-all duration-300 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2"
+			>
+				<span aria-hidden="true">🧹</span> Limpiar Filtros
+			</button>
+		</div>
+
+		<!-- 📊 Información de resultados -->
+		<div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3" role="status" aria-live="polite">
+			<p class="text-gray-600 dark:text-gray-400 text-center sm:text-left">
+				<span class="font-semibold text-purple-600 dark:text-purple-400" id="resultsCount">
+					0
+				</span> Pokémon encontrados
+			</p>
+			
+			<div id="loadingIndicator" class="hidden items-center justify-center sm:justify-start gap-2 text-purple-600 dark:text-purple-400" aria-label="Buscando Pokémon">
+				<span class="animate-spin" aria-hidden="true">⏳</span>
+				<span>Buscando...</span>
+			</div>
+		</div>
+
+		<!-- 🎮 Grid de resultados -->
+		<div id="searchResults" class="space-y-4" role="region" aria-labelledby="search-results-heading">
+			<h3 id="search-results-heading" class="sr-only">Resultados de búsqueda</h3>
+			<div id="noResults" class="hidden text-center py-16" role="status">
+				<div class="text-6xl mb-4" aria-hidden="true">🔍</div>
+				<h4 class="text-xl font-semibold text-gray-600 dark:text-gray-300 mb-2">
+					No se encontraron Pokémon
+				</h4>
+				<p class="text-gray-500 dark:text-gray-400">
+					Intenta ajustar los filtros de búsqueda
+				</p>
+			</div>
+			<div id="resultsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" aria-label="Pokémon encontrados">
+				<!-- Los resultados se insertarán aquí dinámicamente -->
+			</div>
+		</div>
+	</div>
+</div>
+</dialog>
