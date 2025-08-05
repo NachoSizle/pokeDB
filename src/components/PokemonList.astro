@@ -1,5 +1,4 @@
 ---
-// 📋 Lista de Pokémon - Grid responsivo optimizado con paginación
 import type { PokemonData } from '../services/pokemonDB';
 import PokemonCard from './PokemonCard.astro';
 
@@ -11,12 +10,10 @@ export interface Props {
 
 let { pokemons = [], showInitialLoad = true, pageSize = 12 } = Astro.props;
 
-// 🚀 Para optimizar Core Web Vitals, solo cargamos los primeros 12 Pokémon inicialmente
 if (showInitialLoad && pokemons.length === 0) {
   const { getAllPokemon } = await import('../services/pokemonDB');
   const allPokemons = await getAllPokemon();
-  // Limitar a pageSize para carga inicial más rápida
-  pokemons = allPokemons.slice(0, pageSize);
+  pokemons = allPokemons.sort((a: any, b: any) => a.id - b.id).slice(0, pageSize);
 }
 ---
 
@@ -24,7 +21,6 @@ if (showInitialLoad && pokemons.length === 0) {
   <section class="space-y-8" aria-labelledby="pokemon-list-heading">
     <h2 id="pokemon-list-heading" class="sr-only">Lista completa de Pokémon disponibles</h2>
     
-    <!-- Grid de Pokémon -->
     {pokemons.length > 0 ? (
       <div 
         id="pokemon-grid"
@@ -46,7 +42,6 @@ if (showInitialLoad && pokemons.length === 0) {
       </div>
     )}
     
-    <!-- Botón para cargar más Pokémon con paginación real -->
     {showInitialLoad && pokemons.length >= pageSize && (
       <div class="text-center mt-8">
         <button 
@@ -65,7 +60,6 @@ if (showInitialLoad && pokemons.length === 0) {
   </section>
 </div>
 
-<!-- Script para paginación progresiva de Pokémon -->
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     const loadMoreBtn = document.getElementById('load-more-btn') as HTMLButtonElement;
@@ -75,82 +69,55 @@ if (showInitialLoad && pokemons.length === 0) {
     
     if (!loadMoreBtn || !pokemonGrid) return;
     
-    let currentPage = 1;
     const pageSize = parseInt(loadMoreBtn.dataset.pageSize || '12');
     let allPokemon: any[] = [];
     let isLoading = false;
+    let currentPageIndex = 1;
     
-    // 🚀 Función para crear HTML de una tarjeta de Pokémon
     function createPokemonCardHTML(pokemon: any): string {
-      // Parsear tipos de manera inteligente
-      let pokemonTypes: string[] = [];
-      if (Array.isArray(pokemon.types)) {
-        pokemonTypes = pokemon.types;
-      } else if (typeof pokemon.types === 'string') {
-        try {
-          const parsedTypes = JSON.parse(pokemon.types);
-          pokemonTypes = Array.isArray(parsedTypes) ? parsedTypes : [pokemon.types];
-        } catch {
-          pokemonTypes = [pokemon.types];
-        }
-      } else if (pokemon.type) {
-        pokemonTypes = Array.isArray(pokemon.type) ? pokemon.type : [pokemon.type];
-      } else {
-        pokemonTypes = ['normal'];
-      }
-      
-      // Limpiar y capitalizar tipos
-      const typesFormatted = pokemonTypes
-        .map(type => type.trim().toLowerCase())
-        .filter(type => type && type !== 'undefined' && type !== 'null')
-        .map(type => type.charAt(0).toUpperCase() + type.slice(1));
-      
-      // Crear badges de tipos
-      const typesBadges = typesFormatted.map(type => 
-        `<span class="bg-indigo-600 text-white px-3 py-1 rounded-full text-sm font-medium">${type}</span>`
-      ).join(' ');
-      
-      // Estadísticas en grid 3x2
-      const stats = [
-        { label: '❤️ HP', value: pokemon.hp },
-        { label: '⚔️ ATK', value: pokemon.attack },
-        { label: '🛡️ DEF', value: pokemon.defense },
-        { label: '✨ SP.ATK', value: pokemon.specialAttack },
-        { label: '🔮 SP.DEF', value: pokemon.specialDefense },
-        { label: '💨 VEL', value: pokemon.speed }
-      ].filter(stat => stat.value);
-      
-      const statsGrid = stats.length > 0 ? `
-        <div class="grid grid-cols-3 gap-2 text-white text-sm">
-          ${stats.map(stat => `
-            <div class="text-center">
-              <span class="block text-xs text-gray-300">${stat.label}</span>
-              <span class="font-bold">${stat.value}</span>
-            </div>
-          `).join('')}
-        </div>
-      ` : '';
+      const paddedId = pokemon.id.toString().padStart(3, '0');
+      const spriteUrl = pokemon.sprite || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png`;
       
       return `
         <div class="w-full max-w-sm pokemon-card-container" style="animation: slideInUp 0.5s ease-out;">
-          <article class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 border border-slate-700">
-            <div class="text-center mb-4">
+          <article class="group relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-gray-200/50 dark:border-gray-700/50 focus-within:ring-2 focus-within:ring-purple-400 focus-within:ring-offset-2" aria-labelledby="pokemon-${pokemon.id}-name">
+            <div class="flex justify-center mb-4">
               <img 
-                src="${pokemon.sprite || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png`}"
-                alt="Sprite de ${pokemon.name}"
-                class="w-24 h-24 mx-auto mb-3 pixelated"
+                src="${spriteUrl}"
+                alt="Sprite oficial de ${pokemon.name}, Pokémon número ${paddedId} de la Pokédex Nacional"
+                width="96"
+                height="96"
+                class="w-24 h-24 object-contain group-hover:scale-110 transition-transform duration-300"
                 loading="lazy"
+                decoding="async"
               />
-              <h3 class="text-xl font-bold text-white capitalize mb-2">${pokemon.name}</h3>
-              <div class="flex justify-center gap-2 mb-3">${typesBadges}</div>
             </div>
-            ${statsGrid}
+            
+            <div class="text-center space-y-2">
+              <div class="text-sm font-mono text-gray-500 dark:text-gray-400" aria-label="Número de Pokédex ${pokemon.id}">
+                #${paddedId}
+              </div>
+              
+              <h3 
+                id="pokemon-${pokemon.id}-name"
+                class="text-xl font-bold text-gray-800 dark:text-white capitalize group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300"
+              >
+                ${pokemon.name}
+              </h3>
+              
+              <a 
+                href="/pokemon/${pokemon.id}"
+                class="inline-block mt-4 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-lg shadow-md hover:shadow-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2"
+                aria-label="Ver detalles completos de ${pokemon.name}"
+              >
+                Ver detalles
+              </a>
+            </div>
           </article>
         </div>
       `;
     }
     
-    // 🚀 Función para cargar más Pokémon
     async function loadMorePokemon() {
       if (isLoading) return;
       
@@ -159,13 +126,13 @@ if (showInitialLoad && pokemons.length === 0) {
       loadMoreBtn.disabled = true;
       
       try {
-        // Si no tenemos todos los Pokémon, los cargamos
         if (allPokemon.length === 0) {
           const response = await fetch('/api/search');
           const data = await response.json();
           
           if (data.success && data.results) {
-            allPokemon = data.results;
+            allPokemon = data.results.sort((a: any, b: any) => a.id - b.id);
+            
             if (totalCountEl) {
               totalCountEl.textContent = allPokemon.length.toString();
             }
@@ -174,13 +141,11 @@ if (showInitialLoad && pokemons.length === 0) {
           }
         }
         
-        // Calcular qué Pokémon mostrar en esta página
-        const startIndex = currentPage * pageSize;
+        const startIndex = currentPageIndex * pageSize;
         const endIndex = startIndex + pageSize;
         const newPokemon = allPokemon.slice(startIndex, endIndex);
         
         if (newPokemon.length > 0) {
-          // Agregar nuevos Pokémon al grid
           newPokemon.forEach(pokemon => {
             const pokemonHTML = createPokemonCardHTML(pokemon);
             if (pokemonGrid) {
@@ -188,21 +153,18 @@ if (showInitialLoad && pokemons.length === 0) {
             }
           });
           
-          // Actualizar contador
-          const currentCount = pokemonGrid ? pokemonGrid.children.length : 0;
+          currentPageIndex++;
+          
+          const updatedCount = pokemonGrid ? pokemonGrid.children.length : 0;
           if (pokemonCountEl) {
-            pokemonCountEl.textContent = currentCount.toString();
+            pokemonCountEl.textContent = updatedCount.toString();
           }
           
-          // Actualizar aria-label
           if (pokemonGrid) {
-            pokemonGrid.setAttribute('aria-label', `Lista con ${currentCount} Pokémon disponibles`);
+            pokemonGrid.setAttribute('aria-label', `Lista con ${updatedCount} Pokémon disponibles`);
           }
           
-          currentPage++;
-          
-          // Si ya mostramos todos, ocultar botón
-          if (currentCount >= allPokemon.length) {
+          if (updatedCount >= allPokemon.length) {
             loadMoreBtn.style.display = 'none';
             const buttonContainer = loadMoreBtn.parentElement;
             if (buttonContainer) {
@@ -223,12 +185,10 @@ if (showInitialLoad && pokemons.length === 0) {
       isLoading = false;
     }
     
-    // Event listener para el botón
     loadMoreBtn.addEventListener('click', loadMorePokemon);
   });
 </script>
 
-<!-- Efectos visuales adicionales -->
 <style>
   .grid {
     animation: fadeInUp 0.6s ease-out;
@@ -245,7 +205,6 @@ if (showInitialLoad && pokemons.length === 0) {
     }
   }
   
-  /* Animación para nuevas tarjetas cargadas dinámicamente */
   @keyframes slideInUp {
     from {
       opacity: 0;
@@ -257,7 +216,6 @@ if (showInitialLoad && pokemons.length === 0) {
     }
   }
   
-  /* Mejora visual para sprites pixelados */
   .pixelated {
     image-rendering: pixelated;
     image-rendering: -moz-crisp-edges;

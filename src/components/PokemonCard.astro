@@ -1,7 +1,4 @@
 ---
-// 🃏 Componente PokemonCard - Tarjeta individual de Pokémon
-// Diseño simplificado para PokemonData
-
 import type { PokemonData } from '../services/pokemonDB';
 import { Image } from 'astro:assets';
 
@@ -11,12 +8,10 @@ interface Props {
 
 const { pokemon } = Astro.props;
 
-// 🎨 Clases de estilo dinámicas
 const cardClasses = "group relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-gray-200/50 dark:border-gray-700/50 focus-within:ring-2 focus-within:ring-purple-400 focus-within:ring-offset-2";
 ---
 
 <article class={cardClasses} aria-labelledby={`pokemon-${pokemon.id}-name`}>
-  <!-- 🖼️ Imagen del Pokémon -->
   <div class="flex justify-center mb-4">
     <Image 
       src={pokemon.sprite}
@@ -30,14 +25,11 @@ const cardClasses = "group relative bg-white/90 dark:bg-gray-800/90 backdrop-blu
     />
   </div>
   
-  <!-- 📊 Información del Pokémon -->
   <div class="text-center space-y-2">
-    <!-- 🏷️ ID -->
     <div class="text-sm font-mono text-gray-500 dark:text-gray-400" aria-label={`Número de Pokédex ${pokemon.id}`}>
       #{pokemon.id.toString().padStart(3, '0')}
     </div>
     
-    <!-- 📛 Nombre -->
     <h3 
       id={`pokemon-${pokemon.id}-name`}
       class="text-xl font-bold text-gray-800 dark:text-white capitalize group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300"
@@ -45,7 +37,6 @@ const cardClasses = "group relative bg-white/90 dark:bg-gray-800/90 backdrop-blu
       {pokemon.name}
     </h3>
     
-    <!-- 🔗 Enlace al detalle -->
     <a 
       href={`/pokemon/${pokemon.id}`}
       class="inline-block mt-4 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-lg shadow-md hover:shadow-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2"
