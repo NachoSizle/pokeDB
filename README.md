@@ -360,7 +360,7 @@ bun run astro --help     # Ayuda de comandos Astro
 **NachoSizle** - *Desarrollo Full Stack*
 
 - GitHub: [@NachoSizle](https://github.com/NachoSizle)
-- LinkedIn: [Tu perfil](https://linkedin.com/in/tu-perfil)
+- LinkedIn: [Nacho Martínez](https://www.linkedin.com/in/nacho-marmo/)
 
 ---
 
